@@ -29,7 +29,9 @@ A noter que les groupes ne peuvent être composés que d'**une** unité.
 ### Pour charger *CTLD*, il faut charger le script et les deux sons (dans un pays inutilisé)
 - déclencheur de type une fois | condition tps sup à 3 secondes | actions charger script *CTLD.lua* ; son au pays *beacon.ogg* ; son au pays *beaconsilent.ogg*
 ![Chargement_CTLD](https://github.com/Queton1-1/DCS-CTLD/assets/13013609/2f807bfe-8f95-409a-88ba-ea55b0ff76c5)  
+  
 
+Y'a plus qu'à maintenant!  
 o7
 
 
