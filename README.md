@@ -9,6 +9,9 @@ POur en savoir d'avantage sur le fonctionnement [Lien vers la page GitHub de Cir
 
 Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.  
 
+  
+Pour mettre en oeuvre **CTLD** :  
+
 Le script nécessite que *Mist* soit chargé dans la mission au préalable.
  - déclencheur de type une fois | condition tps sup à 1 seconde | actions charger script *Mist.lua*
 ![Chargement_Mist](https://github.com/Queton1-1/DCS-CTLD/assets/13013609/d70269cd-683e-4567-bebf-d498e2c46b24)
