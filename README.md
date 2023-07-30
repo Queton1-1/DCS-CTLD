@@ -6,6 +6,7 @@ Il permet de transporter des troupes et des caisses de matériels appelées "cra
 La capture de base et le renforcement de positions  défensives fait désormais partie du gameplay.
   
 POur en savoir d'avantage sur le fonctionnement [Lien vers la page GitHub de Ciribob](https://github.com/ciribob/DCS-CTLD).  
+
 Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.  
 Le script nécessite que Mist soit chargé dans la mission au préalable.
 
