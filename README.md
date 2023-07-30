@@ -16,7 +16,7 @@ Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.
 ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des groupes) concernées par le transport.  
 > ctld.transportPilotNames = {
 > "mon avion -1",
-> }  
+> }   
 A noter que les groupes ne peuvent être composés que d'**une** unité.  
   
 ### Le script nécessite que *Mist* soit chargé dans la mission au préalable.
