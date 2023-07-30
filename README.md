@@ -8,7 +8,7 @@ La capture de base et le renforcement de positions  défensives fait désormais 
 POur en savoir d'avantage sur le fonctionnement [Lien vers la page GitHub de Ciribob](https://github.com/ciribob/DCS-CTLD).  
 
 Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.  
-
+  
   
 Pour mettre en oeuvre **CTLD** :  
 
