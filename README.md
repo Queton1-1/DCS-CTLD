@@ -12,7 +12,7 @@ Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.
   
 ## Pour mettre en oeuvre **CTLD** :  
 
-### Télechargez la dernière version à partir de la page [Realeases](https://github.com/Queton1-1/DCS-CTLD/releases)  
+### Télechargez la dernière version à partir de la page [Releases](https://github.com/Queton1-1/DCS-CTLD/releases)  
 
 ### Ajustez les paramètres du script suivant vos besoins
 ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des groupes) concernées par le transport.  
