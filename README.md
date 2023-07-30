@@ -12,6 +12,13 @@ Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.
   
 ## Pour mettre en oeuvre **CTLD** :  
 
+Ajustez les paramètres du script suivant vos besoins et, 
+ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des groupes) concernées par le transport.  
+ctld.transportPilotNames = {
+"mon avion -1",
+}  
+A noter que les groupes ne peuvent être composés que d'**une** unité.  
+  
 ### Le script nécessite que *Mist* soit chargé dans la mission au préalable.
  - déclencheur de type une fois | condition tps sup à 1 seconde | actions charger script *Mist.lua*
 ![Chargement_Mist](https://github.com/Queton1-1/DCS-CTLD/assets/13013609/d70269cd-683e-4567-bebf-d498e2c46b24)  
