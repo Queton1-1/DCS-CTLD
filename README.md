@@ -15,7 +15,8 @@ Je partage ici ma version de CTLD, lourdement adaptée, modifiée et commentée.
 ### Ajustez les paramètres du script suivant vos besoins
 ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des groupes) concernées par le transport.  
 > ctld.transportPilotNames = {  
-> "mon avion -1",  
+> "mon avion -1",
+> "mon helico -1",  
 > }  
  
 A noter que les groupes ne peuvent être composés que d'**une** unité.  
