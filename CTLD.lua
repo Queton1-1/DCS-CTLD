@@ -23,6 +23,9 @@
       
     *** JGi ***
         Changelogs
+        v1.15
+            Desactivation de STTS suite à Bug (ligne ~6900)
+            
         v1.14
             Réglages personalisés :
                 maximumDistanceLogistic = 200 ; au lieu de xxx
@@ -6895,26 +6898,26 @@ function ctld.notifyCoalition(_message, _displayFor, _side, _radio, _shortMessag
         _shortMessage = _message
     end
     
-    if STTS and STTS.TextToSpeech and _radio and _radio.freq then
-        local _freq = _radio.freq
-        local _modulation = _radio.mod or "FM"
-        local _volume = _radio.volume or "1.0"
-        local _name = _radio.name or "JTAC"
-        local _gender = _radio.gender or "male"
-        local _culture = _radio.culture or "en-US"
-        local _voice = _radio.voice
-        local _googleTTS = _radio.googleTTS or false
-        ctld.logTrace(string.format("calling STTS.TextToSpeech(%s)", ctld.p(_shortMessage)))
-        ctld.logTrace(string.format("_freq=%s", ctld.p(_freq)))
-        ctld.logTrace(string.format("_modulation=%s", ctld.p(_modulation)))
-        ctld.logTrace(string.format("_volume=%s", ctld.p(_volume)))
-        ctld.logTrace(string.format("_name=%s", ctld.p(_name)))
-        ctld.logTrace(string.format("_gender=%s", ctld.p(_gender)))
-        ctld.logTrace(string.format("_culture=%s", ctld.p(_culture)))
-        ctld.logTrace(string.format("_voice=%s", ctld.p(_voice)))
-        ctld.logTrace(string.format("_googleTTS=%s", ctld.p(_googleTTS)))
-        STTS.TextToSpeech(_shortMessage, _freq, _modulation, _volume, _name, _side, nil, 1, _gender, _culture, _voice, _googleTTS)
-    end
+    -- if STTS and STTS.TextToSpeech and _radio and _radio.freq then
+    --     local _freq = _radio.freq
+    --     local _modulation = _radio.mod or "FM"
+    --     local _volume = _radio.volume or "1.0"
+    --     local _name = _radio.name or "JTAC"
+    --     local _gender = _radio.gender or "male"
+    --     local _culture = _radio.culture or "en-US"
+    --     local _voice = _radio.voice
+    --     local _googleTTS = _radio.googleTTS or false
+    --     ctld.logTrace(string.format("calling STTS.TextToSpeech(%s)", ctld.p(_shortMessage)))
+    --     ctld.logTrace(string.format("_freq=%s", ctld.p(_freq)))
+    --     ctld.logTrace(string.format("_modulation=%s", ctld.p(_modulation)))
+    --     ctld.logTrace(string.format("_volume=%s", ctld.p(_volume)))
+    --     ctld.logTrace(string.format("_name=%s", ctld.p(_name)))
+    --     ctld.logTrace(string.format("_gender=%s", ctld.p(_gender)))
+    --     ctld.logTrace(string.format("_culture=%s", ctld.p(_culture)))
+    --     ctld.logTrace(string.format("_voice=%s", ctld.p(_voice)))
+    --     ctld.logTrace(string.format("_googleTTS=%s", ctld.p(_googleTTS)))
+    --     STTS.TextToSpeech(_shortMessage, _freq, _modulation, _volume, _name, _side, nil, 1, _gender, _culture, _voice, _googleTTS)
+    -- end
 
     trigger.action.outTextForCoalition(_side, _message, _displayFor)
     trigger.action.outSoundForCoalition(_side, "radiobeep.ogg")
