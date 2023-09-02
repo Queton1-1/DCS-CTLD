@@ -21,12 +21,22 @@
 
 
       
-    *** JGi ***
-        Changelogs
-        v1.15
+   %%%%% JGi %%%%%
+        Changelog
+        1.18
+            Suppression big group, ça fait trop ramer.
+        
+        1.17
+            Ajout distance ctld.spawnDroppedGroup offset +10 >> offset +20
+            Reactivation transport véhicule Hercules
+
+        1.16
+            Ajouts modèles transport pilot
+            
+        1.15
             Desactivation de STTS suite à Bug (ligne ~6900)
             
-        v1.14
+        1.14
             Réglages personalisés :
                 maximumDistanceLogistic = 200 ; au lieu de xxx
                 minimumDeployDistance = 50 ; au lieu de 3000
@@ -80,19 +90,19 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
         ctld.hoverPickup = true --  if set to false you can load crates with the F10 menu instead of hovering... Only if not using real crates!
 
-    -- *** CRATES ***
+    --%%%%% CRATES %%%%%
         ctld.enableCrates = true -- if false, Helis will not be able to spawn or unpack crates so will be normal CTTS
 
-    -- *** SLING ***
+    --%%%%% SLING %%%%%
         ctld.slingLoad = false -- if false, crates can be used WITHOUT slingloading, by hovering above the crate, simulating slingloading but not the weight...
         -- There are some bug with Sling-loading that can cause crashes, if these occur set slingLoad to false
         -- to use the other method.
         -- Set staticBugFix  to FALSE if use set ctld.slingLoad to TRUE
 
-    -- *** SMOKE ***
+    --%%%%% SMOKE %%%%%
         ctld.enableSmokeDrop = true -- if false, helis and c-130 will not be able to drop smoke
 
-    -- *** DISTANCES ***
+    --%%%%% DISTANCES %%%%%
         ctld.maxExtractDistance = 125 -- max distance from vehicle to troops to allow a group extraction
         ctld.maximumDistanceLogistic = 200 -- max distance from vehicle to logistics to allow a loading or spawning operation
         ctld.maximumSearchDistance = 4000 -- max distance for troops to search for enemy
@@ -105,25 +115,30 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         ctld.enableFastRopeInsertion = true -- allows you to drop troops by fast rope
         ctld.fastRopeMaximumHeight = 18.28 -- in meters which is 60 ft max fast rope (not rappell) safe height
 
-    -- *** VEHICULES LOADABLES IN C-130 ***
-        ctld.vehiclesForTransportRED = { "BRDM-2", "BTR_D" } -- vehicles to load onto Il-76 - Alternatives {"Strela-1 9P31","BMP-1"}
-        ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
+    --%%%%% VEHICULES LOADABLES IN C-130 %%%%%
+        --ctld.vehiclesForTransportRED = { "BRDM-2", "BTR_D" } -- vehicles to load onto Il-76 - Alternatives {"Strela-1 9P31","BMP-1"}
+        ctld.vehiclesForTransportRED = { "BTR_D", "Ural-375 ZU-23 Insurgent" }
+
+        --ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
+        ctld.vehiclesForTransportBLUE = { "M-2 Bradley", "Ural-375 ZU-23 Insurgent" }
 
         ctld.vehiclesWeight = {
             ["BRDM-2"] = 7000,
             ["BTR_D"] = 8000,
             ["M1045 HMMWV TOW"] = 3220,
-            ["M1043 HMMWV Armament"] = 2500
+            ["M1043 HMMWV Armament"] = 2500,
+            ["Ural-375 ZU-23 Insurgent"] = 9000,
+            ["M-2 Bradley"] = 15000,
         }
 
-    -- *** AA SETTINGS ***
+    --%%%%% AA SETTINGS %%%%%
         ctld.aaLaunchers = 3 -- controls how many launchers to add to the kub/buk when its spawned.
         ctld.hawkLaunchers = 8 -- controls how many launchers to add to the hawk when its spawned.
 
         ctld.spawnRPGWithCoalition = true --spawns a friendly RPG unit with Coalition forces
         ctld.spawnStinger = false -- spawns a stinger / igla soldier with a group of 6 or more soldiers!
 
-    -- *** FOB CONFIGURATION ***
+    --%%%%% FOB CONFIGURATION %%%%%
         ctld.enabledFOBBuilding = true -- if true, you can load a crate INTO a C-130 than when unpacked creates a Forward Operating Base (FOB) which is a new place to spawn (crates) and carry crates from
         -- In future i'd like it to be a FARP but so far that seems impossible...
         -- You can also enable troop Pickup at FOBS
@@ -134,11 +149,11 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         ctld.troopPickupAtFOB = true -- if true, troops can also be picked up at a created FOB
         ctld.buildTimeFOB = 120 --time in seconds for the FOB to be built
 
-    -- *** CRATES CONFIGURATION ***
+    --%%%%% CRATES CONFIGURATION %%%%%
         ctld.crateWaitTime = 120 -- time in seconds to wait before you can spawn another crate
         ctld.forceCrateToBeMoved = true -- a crate must be picked up at least once and moved before it can be unpacked. Helps to reduce crate spam
 
-    -- *** SOUND ***
+    --%%%%% SOUND %%%%%
         ctld.radioSound = "beacon.ogg" -- the name of the sound file to use for the FOB radio beacons. If this isnt added to the mission BEACONS WONT WORK!
         ctld.radioSoundFC3 = "beaconsilent.ogg" -- name of the second silent radio file, used so FC3 aircraft dont hear ALL the beacon noises... :)
         ctld.deployedBeaconBattery = 30 -- the battery on deployed beacons will last for this number minutes before needing to be re-deployed
@@ -146,14 +161,14 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
         ctld.allowRandomAiTeamPickups = false -- Allows the AI to randomize the loading of infantry teams (specified below) at pickup zones
 
-    -- *** Simulated Sling load configuration ***
+    --%%%%% Simulated Sling load configuration %%%%%
         ctld.minimumHoverHeight = 4.5 -- Lowest allowable height for crate hover (7.5)
         ctld.maximumHoverHeight = 12.0 -- Highest allowable height for crate hover
         ctld.maxDistanceFromCrate = 4.5 -- Maximum distance from from crate for hover (5.5)
 
         ctld.hoverTime = 5 -- Temps stationnaire pour élinguer (défaut : 10 secondes)
 
-    -- *** AA SYSTEM CONFIG ***
+    --%%%%% AA SYSTEM CONFIG %%%%%
         -- Sets a limit on the number of active AA systems that can be built for RED.
         -- A system is counted as Active if its fully functional and has all parts
         -- If a system is partially destroyed, it no longer counts towards the total
@@ -198,7 +213,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     
 
 
-    -- *** Notes de JGi ***    
+    --%%%%% Notes de JGi %%%%%    
     -- Les PickUp Zones sont les zones qui permettent d'embarquer des troupes.
     -- Placez des zones sur la carte avec le nom d'une des zones dans la liste,
     -- ou
@@ -377,13 +392,13 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
 
 
-    -- *** Précisions de JGi ***
+    --%%%%% Précisions de JGi %%%%%
     -- Saisir ci-dessous le nom des unités, pas des groupes.
     -- Les groupes ne doivent contenir qu'une unité
     -- Il peux s'agir d'hélico ou d'avions (OV-10A Bronco, Hercules, Yak-52, etc...)
 
     ctld.transportPilotNames = {
-        --[[ *** INFOS ***
+        --[[ %%%%% INFOS %%%%%
             APPAREILS POTENTIELS VANILLA: 
                 C-101EB
                 C-101CC
@@ -416,7 +431,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                 UH-60L
         --]]
 
-        -- *** HELICO SUR FARP - FARP DANS LE NOM DE GROUPE ***
+        --%%%%% HELICO SUR FARP - FARP DANS LE NOM DE GROUPE %%%%%
             -- FARP London
                 "FARP London - Mi-8 -1-1",
                 "FARP London - Mi-8 -2-1",
@@ -1034,7 +1049,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                 "FARP Madrid - Ka-50 III -4-1",
         -- FIN
 
-        -- *** HELICO SUR FARP - SANS FARP DANS LE NOM DE GROUPE ***
+        --%%%%% HELICO SUR FARP - SANS FARP DANS LE NOM DE GROUPE %%%%%
             -- FARP London
                 "London - Mi-8 -1-1",
                 "London - Mi-8 -2-1",
@@ -1596,7 +1611,123 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                 "Madrid - Ka-50 III -4-1",
         -- FIN
 
-        -- *** SPECIFIQUE MISSION ***
+        --%%%%% MODELE HELICO BATUMI %%%%%
+            "Batumi Choppers - Mi-8 -1-1",
+            "Batumi Choppers - Mi-8 -2-1",
+            "Batumi Choppers - Mi-8 -3-1",
+            "Batumi Choppers - Mi-8 -4-1",
+
+            "Batumi Choppers - Mi-8MTV2 -1-1",
+            "Batumi Choppers - Mi-8MTV2 -2-1",
+            "Batumi Choppers - Mi-8MTV2 -3-1",
+            "Batumi Choppers - Mi-8MTV2 -4-1",
+
+            "Batumi Choppers - Mi-24P -1-1",
+            "Batumi Choppers - Mi-24P -2-1",
+            "Batumi Choppers - Mi-24P -3-1",
+            "Batumi Choppers - Mi-24P -4-1",
+
+            "Batumi Choppers - SA342L -1-1",
+            "Batumi Choppers - SA342L -2-1",
+            "Batumi Choppers - SA342L -3-1",
+            "Batumi Choppers - SA342L -4-1",
+
+            "Batumi Choppers - UH-1H -1-1",
+            "Batumi Choppers - UH-1H -2-1",
+            "Batumi Choppers - UH-1H -3-1",
+            "Batumi Choppers - UH-1H -4-1",
+
+            "Batumi Choppers - UH-60L -1-1",
+            "Batumi Choppers - UH-60L -2-1",
+            "Batumi Choppers - UH-60L -3-1",
+            "Batumi Choppers - UH-60L -4-1",
+
+            "Batumi Choppers - Ka-50 -1-1",
+            "Batumi Choppers - Ka-50 -2-1",
+            "Batumi Choppers - Ka-50 -3-1",
+            "Batumi Choppers - Ka-50 -4-1",
+
+            "Batumi Choppers - Ka-50 III -1-1",
+            "Batumi Choppers - Ka-50 III -2-1",
+            "Batumi Choppers - Ka-50 III -3-1",
+            "Batumi Choppers - Ka-50 III -4-1",
+        --FIN
+
+        --%%%%% MODELE AVIONS BATUMI %%%%%
+            "Batumi - Hercules -1-1",
+            "Batumi - Hercules -2-1",
+            "Batumi - Hercules -3-1",
+            "Batumi - Hercules -4-1",
+
+            "Batumi - Bronco -1-1",
+            "Batumi - Bronco -2-1",
+            "Batumi - Bronco -3-1",
+            "Batumi - Bronco -4-1",
+            "Batumi - Bronco -5-1",
+            "Batumi - Bronco -6-1",
+            "Batumi - Bronco -7-1",
+            "Batumi - Bronco -8-1",
+
+            "Batumi - C-101CC -1-1",
+            "Batumi - C-101CC -2-1",
+            "Batumi - C-101CC -3-1",
+            "Batumi - C-101CC -4-1",
+            
+            "Batumi - C-101EB -1-1",
+            "Batumi - C-101EB -2-1",
+            "Batumi - C-101EB -3-1",
+            "Batumi - C-101EB -4-1",
+
+            "Batumi - L-39C -1-1",
+            "Batumi - L-39C -2-1",
+            "Batumi - L-39C -3-1",
+            "Batumi - L-39C -4-1",
+
+            "Batumi - L-39ZA -1-1",
+            "Batumi - L-39ZA -2-1",
+            "Batumi - L-39ZA -3-1",
+            "Batumi - L-39ZA -4-1",
+
+            "Batumi - MB-339A -1-1",
+            "Batumi - MB-339A -2-1",
+            "Batumi - MB-339A -3-1",
+            "Batumi - MB-339A -4-1",
+            
+            "Batumi - MB-339A/PAN -1-1",
+            "Batumi - MB-339A/PAN -2-1",
+            "Batumi - MB-339A/PAN -3-1",
+            "Batumi - MB-339A/PAN -4-1",
+
+            "Batumi - Mosquito -1-1",
+            "Batumi - Mosquito -2-1",
+            "Batumi - Mosquito -3-1",
+            "Batumi - Mosquito -4-1",
+
+            "Batumi - Su-25T -1-1",
+            "Batumi - Su-25T -2-1",
+            "Batumi - Su-25T -3-1",
+            "Batumi - Su-25T -4-1",
+            "Batumi - Su-25T -5-1",
+            "Batumi - Su-25T -6-1",
+            "Batumi - Su-25T -7-1",
+            "Batumi - Su-25T -8-1",
+
+            "Batumi - TF-51D -1-1",
+            "Batumi - TF-51D -2-1",
+            "Batumi - TF-51D -3-1",
+            "Batumi - TF-51D -4-1",
+            "Batumi - TF-51D -5-1",
+            "Batumi - TF-51D -6-1",
+            "Batumi - TF-51D -7-1",
+            "Batumi - TF-51D -8-1",
+
+            "Batumi - Yak-52 -1-1", -- Si un jour la radio marche... 
+            "Batumi - Yak-52 -2-1",
+            "Batumi - Yak-52 -3-1",
+            "Batumi - Yak-52 -4-1",
+        --FIN
+
+        --%%%%% SPECIFIQUE MISSION %%%%%
             -- /!\ Inscrire ci-desous le nom des unités et pas des groupes
             -- "Khasab - Hercules -1-1",
             -- "Khasab - OV-10A Bronco -1-1",
@@ -1607,6 +1738,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             "Debug -4-1",
             "Debug -5-1",
 
+            
             
         -- FIN SPECIFIQUE MISSION
 
@@ -1626,11 +1758,11 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     -- Use any of the predefined names or set your own ones
     -- When a logistic unit is destroyed, you will no longer be able to spawn crates
 
-    -- *** Notes de JGi ***
+    --%%%%% Notes de JGi %%%%%
     -- Saisir ci-dessous le nom des statics qui distribueront les charges
     ctld.logisticUnits = {
-        -- *** GENERIQUE ***
-            -- *** HYSTER : "FENWICK" - Static CV-59 Hyster 60 ***
+        --%%%%% GENERIQUE %%%%%
+            --%%%%% HYSTER : "FENWICK" - Static CV-59 Hyster 60 (x50) %%%%%
                 "Static CV-59 Hyster 60-1-1",
                 "Static CV-59 Hyster 60-2-1",
                 "Static CV-59 Hyster 60-3-1",
@@ -1662,9 +1794,31 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                 "Static CV-59 Hyster 60-27-1",
                 "Static CV-59 Hyster 60-28-1",
                 "Static CV-59 Hyster 60-29-1",
+
+                "Static CV-59 Hyster 60-30-1",
+                "Static CV-59 Hyster 60-31-1",
+                "Static CV-59 Hyster 60-32-1",
+                "Static CV-59 Hyster 60-33-1",
+                "Static CV-59 Hyster 60-34-1",
+                "Static CV-59 Hyster 60-35-1",
+                "Static CV-59 Hyster 60-36-1",
+                "Static CV-59 Hyster 60-37-1",
+                "Static CV-59 Hyster 60-38-1",
+                "Static CV-59 Hyster 60-39-1",
+
+                "Static CV-59 Hyster 60-40-1",
+                "Static CV-59 Hyster 60-41-1",
+                "Static CV-59 Hyster 60-42-1",
+                "Static CV-59 Hyster 60-43-1",
+                "Static CV-59 Hyster 60-44-1",
+                "Static CV-59 Hyster 60-45-1",
+                "Static CV-59 Hyster 60-46-1",
+                "Static CV-59 Hyster 60-47-1",
+                "Static CV-59 Hyster 60-48-1",
+                "Static CV-59 Hyster 60-49-1",
             -- FIN HYSTER
 
-            -- *** FORKLIFT - Static CV-59 Large Forklift***
+            --%%%%% FORKLIFT - Static CV-59 Large Forklift (x50) %%%%%
                 "Static CV-59 Large Forklift-1-1",
                 "Static CV-59 Large Forklift-2-1",
                 "Static CV-59 Large Forklift-3-1",
@@ -1722,7 +1876,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                 "Static CV-59 Large Forklift-49-1",
             -- FIN FORKLIFT
 
-            -- *** LOGISTIC ***
+            --%%%%% LOGISTIC %%%%%
                 "logistic-1",
                 "logistic-2",
                 "logistic-3",
@@ -1759,7 +1913,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
         -- FIN GENERIQUE
         
-        -- *** SPECIFIQUES MISSION ***
+        --%%%%% SPECIFIQUES MISSION %%%%%
             -- Exemples :
             --"FARP London - Hyster 60",
             --"Khasab - Hyster 60",
@@ -1772,7 +1926,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     -- in the contained mission file
     ctld.vehicleTransportEnabled = {
         "76MD", -- the il-76 mod doesnt use a normal - sign so il-76md wont match... !!!! GRR
-        --"Hercules", 
+        "Hercules", 
     }
 
 
@@ -1786,14 +1940,14 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
     ctld.unitLoadLimits = {
         -- Remove the -- below to turn on options
-        -- *** MODS ***
+        --%%%%% MODS %%%%%
             ["Bronco-OV-10A"] = 4,
             ["Hercules"] = 30,
             ["SK-60"] = 1,
             ["UH-60L"] = 12,
             ["T-45"] = 1,
         
-        -- *** CHOPPERS ***
+        --%%%%% CHOPPERS %%%%%
             ["Mi-8MT"] = 16,
             ["Mi-24P"] = 10,
             ["SA342L"] = 4,
@@ -1802,7 +1956,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["SA342Minigun"] = 3,
             ["UH-1H"] = 8,
         
-        -- *** AIRCRAFTS ***
+        --%%%%% AIRCRAFTS %%%%%
             ["C-101EB"] = 1,
             ["C-101CC"] = 1,
             ["Christen Eagle II"] = 1,
@@ -1818,7 +1972,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["Su-25T"] = 1,
             ["Yak-52"] = 1,
 
-        -- *** WARBIRDS ***
+        --%%%%% WARBIRDS %%%%%
             ["Bf-109K-4"] = 1,
             ["Fw 190A8"] = 1,
             ["FW-190D9"] = 1,
@@ -1850,14 +2004,14 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     ctld.unitActions = {
         -- Remove the -- below to turn on options
 
-        -- *** MODS ***
+        --%%%%% MODS %%%%%
             ["Bronco-OV-10A"] = {crates=true, troops=true},
             ["Hercules"] = {crates=true, troops=true},
             ["SK-60"] = {crates=true, troops=true},
             ["UH-60L"] = {crates=true, troops=true},
             ["T-45"] = {crates=true, troops=true},
         
-        -- *** CHOPPERS ***
+        --%%%%% CHOPPERS %%%%%
             ["Ka-50"] = {crates=true, troops=false},
             ["Ka-50_3"] = {crates=true, troops=false},
             ["Mi-8MT"] = {crates=true, troops=true},
@@ -1868,7 +2022,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["SA342Minigun"] = {crates=false, troops=true},
             ["UH-1H"] = {crates=true, troops=true},
         
-        -- *** AIRCRAFTS ***
+        --%%%%% AIRCRAFTS %%%%%
             ["C-101EB"] = {crates=true, troops=true},
             ["C-101CC"] = {crates=true, troops=true},
             ["Christen Eagle II"] = {crates=true, troops=true},
@@ -1884,7 +2038,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["Su-25T"]= {crates=true, troops=false},
             ["Yak-52"] = {crates=true, troops=true},
 
-        -- *** WARBIRDS ***
+        --%%%%% WARBIRDS %%%%%
             ["Bf-109K-4"] = {crates=true, troops=false},
             ["Fw 190A8"] = {crates=true, troops=false},
             ["FW-190D9"] = {crates=true, troops=false},
@@ -1932,23 +2086,23 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     ctld.loadableGroups = {
         --{name = "Standard Group", inf = 6, mg = 2, at = 2 }, -- will make a loadable group with 6 infantry, 2 MGs and 2 anti-tank for both coalitions
         
-        -- *** MIXED ***
+        --%%%%% MIXED %%%%%
         {name = "Standard Group", mg = 2, at = 3, aa = 2, jtac = 1 },
         {name = "Light Group", mg = 1, at = 1, aa = 1, jtac = 1 },
-        {name = "Big Group", inf=9, mg = 6, at = 8, aa = 6, jtac = 1 },
+        --{name = "Big Group", inf=9, mg = 6, at = 8, aa = 6, jtac = 1 },
 
-        -- *** SPECIALIZED ***
+        --%%%%% SPECIALIZED %%%%%
         {name = "Anti Air", mg = 2, aa = 4  },
         {name = "Anti Tank", mg = 2, at = 6  },
         {name = "Mortar Squad", mortar = 6 },
         {name = "JTAC Group", inf = 3, jtac = 1 },
 
-        -- *** SINGLES ***
+        --%%%%% SINGLES %%%%%
         {name = "Single JTAC", jtac = 1 },
         {name = "Single Anti Air", aa = 1, },
         {name = "Single Anti Tank", at = 1, },
 
-        -- *** WWII ***
+        --%%%%% WWII %%%%%
         -- {name = "Infantery", mg = 1, },
         -- {name = "Anti Tank", at = 1, },
     }
@@ -1968,67 +2122,67 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             -- side is optional but 2 is BLUE and 1 is RED
             -- dont use that option with the HAWK Crates
 
-            -- *** ATGM ***
+            --%%%%% ATGM %%%%%
             { weight = 700.010, desc = "M1134 Stryker ATGM", unit = "M1134 Stryker ATGM", side = 1, cratesRequired = 1 },
             { weight = 700.011, desc = "VAB_Mephisto", unit = "VAB_Mephisto", side = 2, cratesRequired = 1 },
             
-            -- *** APC - IFV ***
+            --%%%%% APC - IFV %%%%%
             { weight = 700.020, desc = "BTR-82A", unit = "BTR-82A", side = 1, cratesRequired = 1 },
             { weight = 700.021, desc = "M2A2 Bradley", unit = "M-2 Bradley", side = 2, cratesRequired = 1 },
 
-            -- *** APC - IFV WWII ***
+            --%%%%% APC - IFV WWII %%%%%
             --{ weight = 700.020, desc = "Sd Kfz 251 Halftack", unit = "Sd_Kfz_251", side = 1, cratesRequired = 1 },
             --{ weight = 700.021, desc = "M2A1 Halftrack", unit = "M2A1_halftrack", side = 2, cratesRequired = 1 },
 
-            -- *** ARTILLERIE ***
+            --%%%%% ARTILLERIE %%%%%
             { weight = 700.030, desc = "SPH 2S19 Msta", unit = "SAU Msta", side = 1, cratesRequired = 2 },
             { weight = 700.031, desc = "M-109 Paladin", unit = "M-109", side = 2, cratesRequired = 2 },
 
-            -- *** MBT ***
+            --%%%%% MBT %%%%%
             { weight = 700.040, desc = "MBT T-90", unit = "T-90", side = 1, cratesRequired = 2 },
             { weight = 700.041, desc = "MBT M-1 Abrams", unit = "M-1 Abrams", side = 2, cratesRequired = 2 },
 
-            -- *** MBT COLD WAR ***
+            --%%%%% MBT COLD WAR %%%%%
             --{ weight = 700.040, desc = "MBT T-55", unit = "T-55", side = 1, cratesRequired = 2 },
             --{ weight = 700.041, desc = "MBT M-60 Patton", unit = "M-60", side = 2, cratesRequired = 2 },
 
-            -- *** MBT WWII ***
+            --%%%%% MBT WWII %%%%%
             --{ weight = 700.040, desc = "MBT Tiger I", unit = "Tiger_I", side = 1, cratesRequired = 2 },
             --{ weight = 700.041, desc = "MBT M4 Sherman", unit = "M4_Sherman", side = 2, cratesRequired = 2 },
 
-            -- *** JTAC ***
+            --%%%%% JTAC %%%%%
             { weight = 700.050, desc = "SKP-11 - JTAC", unit = "SKP-11", side = 1, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
             { weight = 700.051, desc = "HMMWV - JTAC", unit = "Hummer", side = 2, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
 
-            -- *** SOUTIEN LOG ***
+            --%%%%% SOUTIEN LOG %%%%%
             { weight = 800.020, desc = "Ural-375 Ammo Truck", unit = "Ural-375", side = 1, cratesRequired = 1 },
             { weight = 800.021, desc = "M-818 Ammo Truck", unit = "M 818", side = 2, cratesRequired = 1 },
 
-            -- *** BASE AVANCEE ***
+            --%%%%% BASE AVANCEE %%%%%
             { weight = 800.010, desc = "FOB Crate - Small", unit = "FOB-SMALL" }, --requires 3 * ctld.cratesRequiredForFOB
 
-            -- *** WWII ***
+            --%%%%% WWII %%%%%
                 -- { weight = 200.010, desc = "2B11 Mortar", unit = "2B11 mortar" },
                 -- { weight = 800.010, desc = "FOB", unit = "FOB-SMALL" },
                 -- { weight = 800.020, desc = "Ammo Truck", unit = "Ural-375", cratesRequired = 1 },
         },
         ["Crates - Short range AA"] = {
-            -- *** MANPADS ***
+            --%%%%% MANPADS %%%%%
             --{ weight = 90.300, desc = "Stinger", unit = "Soldier stinger", side = 2 },
             --{ weight = 90.301, desc = "Igla", unit = "SA-18 Igla manpad", side = 1 },
 
-            -- *** AAA WWII ***
+            --%%%%% AAA WWII %%%%%
             --{ weight = 700.300, desc = "flak 38", unit = "flak38", side = 1, cratesRequired = 1 },
             --{ weight = 700.301, desc = "Bofor 40", unit = "bofors40", side = 2, cratesRequired = 1 },
 
-            -- *** AAA ***
+            --%%%%% AAA %%%%%
             { weight = 700.310, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 1, cratesRequired = 1 },
             { weight = 700.311, desc = "ZSU-23-4 Shilka", unit = "ZSU-23-4 Shilka", side = 1, cratesRequired = 1 },
 
             { weight = 700.312, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 2, cratesRequired = 1 },
             { weight = 700.313, desc = "Gepard", unit = "Gepard", side = 2, cratesRequired = 1 },
 
-            -- *** SAM IR ***
+            --%%%%% SAM IR %%%%%
             { weight = 700.320, desc = "SA-19 Tunguska", unit = "2S6 Tunguska", side = 1, cratesRequired = 2 },
             { weight = 700.321, desc = "SA-9 Strela", unit = "Strela-1 9P31", side = 1, cratesRequired = 2 },
             
@@ -2042,11 +2196,11 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
             { weight = 700.502, desc = "Roland ADS", unit = "Roland ADS" , side = 2, cratesRequired = 3 },
             
-            -- -- *** SA-6 KUB SYSTEM ***
+            -- --%%%%% SA-6 KUB SYSTEM %%%%%
             -- { weight = 700.510, desc = "KUB Launcher", unit = "Kub 2P25 ln", side = 1},
             -- { weight = 700.511, desc = "KUB Radar", unit = "Kub 1S91 str", side = 1},
             -- { weight = 700.512, desc = "KUB Repair", unit = "KUB Repair", side = 1},
-            -- -- *** HAWK System ***
+            -- --%%%%% HAWK System %%%%%
             -- { weight = 700.513, desc = "HAWK Launcher", unit = "Hawk ln", side = 2},
             -- { weight = 700.514, desc = "HAWK Search Radar", unit = "Hawk sr", side = 2 },
             -- { weight = 700.515, desc = "HAWK Track Radar", unit = "Hawk tr", side = 2 },
@@ -2057,7 +2211,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         -- ["Crates - Long range AA"] = {
         --     { weight = 595, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4},
             
-        --     -- *** Patriot System ***
+        --     --%%%%% Patriot System %%%%%
         --     { weight = 700.701, desc = "Patriot Launcher", unit = "Patriot ln", side = 2 },
         --     { weight = 700.702, desc = "Patriot Radar", unit = "Patriot str" , side = 2 },
         --     { weight = 700.703, desc = "Patriot ECS", unit = "Patriot ECS", side = 2 },
@@ -2067,7 +2221,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         --     { weight = 700.707, desc = "Patriot Repair", unit = "Patriot Repair" , side = 2 },
         --     { weight = 700.708, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4}, -- cant be used by BLUE coalition
             
-        --     -- *** BUK System ***
+        --     --%%%%% BUK System %%%%%
         --     { weight = 700.710, desc = "BUK Launcher", unit = "SA-11 Buk LN 9A310M1"},
         --     { weight = 700.711, desc = "BUK Search Radar", unit = "SA-11 Buk SR 9S18M1"},
         --     { weight = 700.712, desc = "BUK CC Radar", unit = "SA-11 Buk CC 9S470M1"},
@@ -5726,7 +5880,7 @@ function ctld.spawnDroppedGroup(_point, _details, _spawnBehind, _maxSearch)
 
 
         for _i, _detail in ipairs(_details.units) do
-            _group.units[_i] = ctld.createUnit(_pos.x + (_xOffset + 10 * _i), _pos.z + (_yOffset + 10 * _i), _angle, _detail)
+            _group.units[_i] = ctld.createUnit(_pos.x + (_xOffset + 30 * _i), _pos.z + (_yOffset + 30 * _i), _angle, _detail)
         end
     end
 
@@ -6474,9 +6628,7 @@ function ctld.addF10MenuOptions()
                         if (ctld.enabledFOBBuilding or ctld.enableCrates) and _unitActions.crates then
 
                             local _crateCommands = missionCommands.addSubMenuForGroup(_groupId, "Crates - Commands", _rootPath)
-                            -- **************
-                            -- *** By JGi ***
-                            -- **************
+                            --%%%%% By JGi %%%%%
                             --if ctld.hoverPickup == false then
                                 --if  ctld.slingLoad == false then
                                     missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
