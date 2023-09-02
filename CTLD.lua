@@ -27,7 +27,7 @@
             Suppression big group, ça fait trop ramer.
         
         1.17
-            Ajout distance ctld.spawnDroppedGroup offset +10 >> offset +20
+            Ajout distance function ctld.spawnDroppedGroup offset +10 >> offset +30
             Reactivation transport véhicule Hercules
 
         1.16
