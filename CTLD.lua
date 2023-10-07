@@ -21,8 +21,14 @@
 
 
       
-   %%%%% JGi %%%%%
+   %%%%% JGi | Quéton 1-1 %%%%%
         Changelog
+        1.20
+            Proposition des modifications à Ciribob
+            Ajout preset IFV Cold War
+            Renommage menu "CTLD Command" > "Crates - Actions"
+            Ajout Load Crate au menu "ctld.loadCrateFromMenu == true"
+
         1.19
             Plus besoin de déclarer les unités pour avoir accès à CTLD
             Ajout Booléen ctld.addPlayerAircraftByType = true 
@@ -100,6 +106,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
     --%%%%% CRATES %%%%%
         ctld.enableCrates = true -- if false, Helis will not be able to spawn or unpack crates so will be normal CTTS
         ctld.hoverPickup = true --  if set to false you can load crates with the F10 menu instead of hovering... Only if not using real crates!
+        ctld.loadCrateFromMenu = true -- if set to true, you can load crates with the F10 menu OR hovering, in case of using choppers and planes for example.
 
     --%%%%% SLING %%%%%
         ctld.slingLoad = false -- if false, crates can be used WITHOUT slingloading, by hovering above the crate, simulating slingloading but not the weight...
@@ -123,12 +130,18 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         ctld.enableFastRopeInsertion = true -- allows you to drop troops by fast rope
         ctld.fastRopeMaximumHeight = 18.28 -- in meters which is 60 ft max fast rope (not rappell) safe height
 
-    --%%%%% VEHICULES LOADABLES IN C-130 %%%%%
+    --%%%%% C-130 & IL-76 VEHICULES %%%%%
         --ctld.vehiclesForTransportRED = { "BRDM-2", "BTR_D" } -- vehicles to load onto Il-76 - Alternatives {"Strela-1 9P31","BMP-1"}
+        --> Modern
         ctld.vehiclesForTransportRED = { "BTR_D", "Ural-375 ZU-23 Insurgent" }
+        --> COLD WAR
+        --ctld.vehiclesForTransportRED = { "BMP-2", "Ural-375 ZU-23 Insurgent" }
 
         --ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
+        --> Modern
         ctld.vehiclesForTransportBLUE = { "M-2 Bradley", "Ural-375 ZU-23 Insurgent" }
+        --> COLD WAR
+        --ctld.vehiclesForTransportBLUE = { "M-113", "Ural-375 ZU-23 Insurgent" }
 
         ctld.vehiclesWeight = {
             ["BRDM-2"] = 7000,
@@ -137,6 +150,8 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["M1043 HMMWV Armament"] = 2500,
             ["Ural-375 ZU-23 Insurgent"] = 9000,
             ["M-2 Bradley"] = 15000,
+            ["BMP-2"] = 7000,
+            ["M-113"] = 7000,
         }
 
     --%%%%% AA SETTINGS %%%%%
@@ -174,7 +189,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         ctld.maximumHoverHeight = 12.0 -- Highest allowable height for crate hover
         ctld.maxDistanceFromCrate = 4.5 -- Maximum distance from from crate for hover (5.5)
 
-        ctld.hoverTime = 5 -- Temps stationnaire pour élinguer (défaut : 10 secondes)
+        ctld.hoverTime = 5 --Temps stationnaire pour élinguer (défaut : 10 secondes)
 
     --%%%%% AA SYSTEM CONFIG %%%%%
         -- Sets a limit on the number of active AA systems that can be built for RED.
@@ -200,7 +215,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         ctld.JTAC_smokeColour_RED = 4 -- RED side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
         ctld.JTAC_smokeColour_BLUE = 1 -- BLUE side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
 
-        ctld.JTAC_jtacStatusF10 = false -- enables F10 JTAC Status menu. May crash.
+        ctld.JTAC_jtacStatusF10 = false -- enables F10 JTAC Status menu
 
         ctld.JTAC_location = true -- shows location of target in JTAC message
         ctld.location_DMS = false -- shows coordinates as Degrees Minutes Seconds instead of Degrees Decimal minutes
@@ -407,6 +422,8 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             "T-45",
         
         --%%%%% CHOPPERS %%%%%
+            "Ka-50",
+            "Ka-50_3",
             "Mi-8MT",
             "Mi-24P",
             "SA342L",
@@ -850,6 +867,10 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             --{ weight = 700.020, desc = "Sd Kfz 251 Halftack", unit = "Sd_Kfz_251", side = 1, cratesRequired = 1 },
             --{ weight = 700.021, desc = "M2A1 Halftrack", unit = "M2A1_halftrack", side = 2, cratesRequired = 1 },
 
+            --%%%%% APC - IFV COLD WAR %%%%%
+            -- { weight = 700.020, desc = "BMP-2", unit = "BMP-2", side = 1, cratesRequired = 1 },
+            -- { weight = 700.021, desc = "M-113", unit = "M-113", side = 2, cratesRequired = 1 },
+
             --%%%%% ARTILLERIE %%%%%
             { weight = 700.030, desc = "SPH 2S19 Msta", unit = "SAU Msta", side = 1, cratesRequired = 2 },
             { weight = 700.031, desc = "M-109 Paladin", unit = "M-109", side = 2, cratesRequired = 2 },
@@ -1026,7 +1047,6 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         for i = 1, #_bluePlayers do
             for i_2 = 1, #ctld.aircraftTypeTable do
                 if ctld.aircraftTypeTable[i_2] == Unit.getTypeName(_bluePlayers[i]) then
-                    --trigger.action.outText("Match !", 30)
                     _match = 0
                     for i_3 = 1, #ctld.transportPilotNames do
 
@@ -1036,7 +1056,6 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                     end
                     if _match == 0 then 
                         ctld.transportPilotNames[#ctld.transportPilotNames+1] = Unit.getName(_bluePlayers[i])
-                        --trigger.action.outText("Player added", 30)
                     end
 
                 end
@@ -1047,7 +1066,6 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         for i = 1, #_redPlayers do
             for i_2 = 1, #ctld.aircraftTypeTable do
                 if ctld.aircraftTypeTable[i_2] == Unit.getTypeName(_redPlayers[i]) then
-                    --trigger.action.outText("Match !", 30)
                     _match = 0
                     for i_3 = 1, #ctld.transportPilotNames do
 
@@ -1057,13 +1075,11 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                     end
                     if _match == 0 then 
                         ctld.transportPilotNames[#ctld.transportPilotNames+1] = Unit.getName(_redPlayers[i])
-                        --trigger.action.outText("Player added", 30)
                     end
 
                 end
             end
         end
-        --timer.scheduleFunction(AddPlayerAircraftByType, nil, timer.getTime() + 30)
     end
 
 -----------------------------------------------------------------
@@ -5394,11 +5410,17 @@ function ctld.addF10MenuOptions()
 
                         if (ctld.enabledFOBBuilding or ctld.enableCrates) and _unitActions.crates then
 
-                            local _crateCommands = missionCommands.addSubMenuForGroup(_groupId, "Crates - Commands", _rootPath)
-                            --%%%%% By JGi %%%%%
+                            local _crateCommands = missionCommands.addSubMenuForGroup(_groupId, "Crates - Actions", _rootPath)
+                            --%%%%% Adds By JGi %%%%%
+                            if ctld.hoverPickup == false or ctld.loadCrateFromMenu == true then
+                                if  ctld.slingLoad == false then
+                                missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
+                                end
+                            end
+                            --> Legacy
                             --if ctld.hoverPickup == false then
                                 --if  ctld.slingLoad == false then
-                                    missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
+                                -- missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
                                 --end
                             --end
 
