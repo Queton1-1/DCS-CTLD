@@ -18,65 +18,7 @@
 	    - davidp57 - https://github.com/veaf
 
       - Allow minimum distance from friendly logistics to be set
-
-
-      
-   %%%%% JGi | Quéton 1-1 %%%%%
-        Changelog
-        1.20
-            Proposition des modifications à Ciribob
-            Ajout preset IFV Cold War
-            Renommage menu "CTLD Command" > "Crates - Actions"
-            Ajout Load Crate au menu "ctld.loadCrateFromMenu == true"
-
-        1.19
-            Plus besoin de déclarer les unités pour avoir accès à CTLD
-            Ajout Booléen ctld.addPlayerAircraftByType = true 
-            Ajout table ctld.aircraftTypeTable {}
-            Ajout fonction AddPlayerAircraftByType()
-            
-        1.18
-            Suppression big group, ça fait trop ramer.
-        
-        1.17
-            Ajout distance function ctld.spawnDroppedGroup offset +10 >> offset +30
-            Reactivation transport véhicule Hercules
-
-        1.16
-            Ajouts modèles transport pilot
-            
-        1.15
-            Desactivation de STTS suite à Bug (ligne ~6900)
-            
-        1.14
-            Réglages personalisés :
-                maximumDistanceLogistic = 200 ; au lieu de xxx
-                minimumDeployDistance = 50 ; au lieu de 3000
-                cratesRequiredForFOB = 1 ; au lieu de 3 (*3 pour choppers)
-                hoverTime = 5 ; au lieu de 10 secondes
-                JTAC_jtacStatusF10 = false ; parce que ça crash
-
-            PickUp Zones pré-saisies de pz-1 à pz-99 au format { "pz-1", "none", -1, "yes", 0 },
-
-            Ajout dans [transportPilotNames] ; pré-saisies hélico sur FARPS
-
-            Ajout dans [logisticUnits] ; 
-                pré-saisie Static CV-59 Hyster de -1 à -29
-                pré-saisie Static CV-59 Large Forklift de -1 à -49
-            
-            Désactivation Hercules dans [vehicleTransportEnabled] ; cause bug
-
-            Complétion de [unitLoadLimits] & [unitActions] avec valeurs cohérentes
-
-            refonte de [loadableGroups] avec différents groupe de soldats
-
-            refonte de [spawnableCrates]
-                Clarification des menus : Crates - Ground Support / Crates - Short range AA / Crates - Commands
-                Ajout crates de divers type : ATGM / APC-IFV / ARTI / MBT / JTAC / LOG / AAA / SAM
-
-            Modification [spawnableCratesModel_load] : container_cargo ; visuel de bien meilleure qualité
-
---]]
+ ]]
 
 ctld = {} -- DONT REMOVE!
 
@@ -84,1003 +26,624 @@ ctld = {} -- DONT REMOVE!
 ctld.Id = "CTLD - "
 
 --- Version.
-ctld.Version = "20211113.01"
+ctld.Version = "20230414.01"
 
 -- debug level, specific to this module
-ctld.Debug = false
+ctld.Debug = true
 -- trace level, specific to this module
-ctld.Trace = false
+ctld.Trace = true
 
 ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
 -- ************************************************************************
 -- *********************  USER CONFIGURATION ******************************
 -- ************************************************************************
-        ctld.staticBugWorkaround = false --  DCS had a bug where destroying statics would cause a crash. If this happens again, set this to TRUE
+ctld.staticBugWorkaround = false --  DCS had a bug where destroying statics would cause a crash. If this happens again, set this to TRUE
 
-        ctld.disableAllSmoke = false -- if true, all smoke is diabled at pickup and drop off zones regardless of settings below. Leave false to respect settings below
+ctld.disableAllSmoke = false -- if true, all smoke is diabled at pickup and drop off zones regardless of settings below. Leave false to respect settings below
 
-        --> Allow units to CTLD by aircraft type and not by pilot name
-        ctld.addPlayerAircraftByType = true
+ctld.hoverPickup = true --  if set to false you can load crates with the F10 menu instead of hovering... Only if not using real crates!
 
-    --%%%%% CRATES %%%%%
-        ctld.enableCrates = true -- if false, Helis will not be able to spawn or unpack crates so will be normal CTTS
-        ctld.hoverPickup = true --  if set to false you can load crates with the F10 menu instead of hovering... Only if not using real crates!
-        ctld.loadCrateFromMenu = true -- if set to true, you can load crates with the F10 menu OR hovering, in case of using choppers and planes for example.
+ctld.enableCrates = true -- if false, Helis will not be able to spawn or unpack crates so will be normal CTTS
+ctld.slingLoad = false -- if false, crates can be used WITHOUT slingloading, by hovering above the crate, simulating slingloading but not the weight...
+-- There are some bug with Sling-loading that can cause crashes, if these occur set slingLoad to false
+-- to use the other method.
+-- Set staticBugFix  to FALSE if use set ctld.slingLoad to TRUE
 
-    --%%%%% SLING %%%%%
-        ctld.slingLoad = false -- if false, crates can be used WITHOUT slingloading, by hovering above the crate, simulating slingloading but not the weight...
-        -- There are some bug with Sling-loading that can cause crashes, if these occur set slingLoad to false
-        -- to use the other method.
-        -- Set staticBugFix  to FALSE if use set ctld.slingLoad to TRUE
+ctld.enableSmokeDrop = true -- if false, helis and c-130 will not be able to drop smoke
 
-    --%%%%% SMOKE %%%%%
-        ctld.enableSmokeDrop = true -- if false, helis and c-130 will not be able to drop smoke
+ctld.maxExtractDistance = 125 -- max distance from vehicle to troops to allow a group extraction
+ctld.maximumDistanceLogistic = 200 -- max distance from vehicle to logistics to allow a loading or spawning operation
+ctld.maximumSearchDistance = 4000 -- max distance for troops to search for enemy
+ctld.maximumMoveDistance = 2000 -- max distance for troops to move from drop point if no enemy is nearby
 
-    --%%%%% DISTANCES %%%%%
-        ctld.maxExtractDistance = 125 -- max distance from vehicle to troops to allow a group extraction
-        ctld.maximumDistanceLogistic = 200 -- max distance from vehicle to logistics to allow a loading or spawning operation
-        ctld.maximumSearchDistance = 4000 -- max distance for troops to search for enemy
-        ctld.maximumMoveDistance = 2000 -- max distance for troops to move from drop point if no enemy is nearby
+ctld.minimumDeployDistance = 1000 -- minimum distance from a friendly pickup zone where you can deploy a crate
 
-        ctld.minimumDeployDistance = 50 -- minimum distance from a friendly pickup zone where you can deploy a crate (default 1000m)
+ctld.numberOfTroops = 10 -- default number of troops to load on a transport heli or C-130 
+							-- also works as maximum size of group that'll fit into a helicopter unless overridden
+ctld.enableFastRopeInsertion = true -- allows you to drop troops by fast rope
+ctld.fastRopeMaximumHeight = 18.28 -- in meters which is 60 ft max fast rope (not rappell) safe height
 
-        ctld.numberOfTroops = 10 -- default number of troops to load on a transport heli or C-130 
-                                    -- also works as maximum size of group that'll fit into a helicopter unless overridden
-        ctld.enableFastRopeInsertion = true -- allows you to drop troops by fast rope
-        ctld.fastRopeMaximumHeight = 18.28 -- in meters which is 60 ft max fast rope (not rappell) safe height
+ctld.vehiclesForTransportRED = { "BRDM-2", "BTR_D" } -- vehicles to load onto Il-76 - Alternatives {"Strela-1 9P31","BMP-1"}
+ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
+ctld.vehiclesWeight = {
+    ["BRDM-2"] = 7000,
+    ["BTR_D"] = 8000,
+    ["M1045 HMMWV TOW"] = 3220,
+    ["M1043 HMMWV Armament"] = 2500
+}
 
-    --%%%%% C-130 & IL-76 VEHICULES %%%%%
-        --ctld.vehiclesForTransportRED = { "BRDM-2", "BTR_D" } -- vehicles to load onto Il-76 - Alternatives {"Strela-1 9P31","BMP-1"}
-        --> Modern
-        ctld.vehiclesForTransportRED = { "BTR_D", "Ural-375 ZU-23 Insurgent" }
-        --> COLD WAR
-        --ctld.vehiclesForTransportRED = { "BMP-2", "Ural-375 ZU-23 Insurgent" }
+ctld.aaLaunchers = 3 -- controls how many launchers to add to the kub/buk when its spawned.
+ctld.hawkLaunchers = 8 -- controls how many launchers to add to the hawk when its spawned.
 
-        --ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
-        --> Modern
-        ctld.vehiclesForTransportBLUE = { "M-2 Bradley", "Ural-375 ZU-23 Insurgent" }
-        --> COLD WAR
-        --ctld.vehiclesForTransportBLUE = { "M-113", "Ural-375 ZU-23 Insurgent" }
+ctld.spawnRPGWithCoalition = true --spawns a friendly RPG unit with Coalition forces
+ctld.spawnStinger = false -- spawns a stinger / igla soldier with a group of 6 or more soldiers!
 
-        ctld.vehiclesWeight = {
-            ["BRDM-2"] = 7000,
-            ["BTR_D"] = 8000,
-            ["M1045 HMMWV TOW"] = 3220,
-            ["M1043 HMMWV Armament"] = 2500,
-            ["Ural-375 ZU-23 Insurgent"] = 9000,
-            ["M-2 Bradley"] = 15000,
-            ["BMP-2"] = 7000,
-            ["M-113"] = 7000,
-        }
+ctld.enabledFOBBuilding = true -- if true, you can load a crate INTO a C-130 than when unpacked creates a Forward Operating Base (FOB) which is a new place to spawn (crates) and carry crates from
+-- In future i'd like it to be a FARP but so far that seems impossible...
+-- You can also enable troop Pickup at FOBS
 
-    --%%%%% AA SETTINGS %%%%%
-        ctld.aaLaunchers = 3 -- controls how many launchers to add to the kub/buk when its spawned.
-        ctld.hawkLaunchers = 8 -- controls how many launchers to add to the hawk when its spawned.
+ctld.cratesRequiredForFOB = 3 -- The amount of crates required to build a FOB. Once built, helis can spawn crates at this outpost to be carried and deployed in another area.
+-- The large crates can only be loaded and dropped by large aircraft, like the C-130 and listed in ctld.vehicleTransportEnabled
+-- Small FOB crates can be moved by helicopter. The FOB will require ctld.cratesRequiredForFOB larges crates and small crates are 1/3 of a large fob crate
+-- To build the FOB entirely out of small crates you will need ctld.cratesRequiredForFOB * 3
 
-        ctld.spawnRPGWithCoalition = true --spawns a friendly RPG unit with Coalition forces
-        ctld.spawnStinger = false -- spawns a stinger / igla soldier with a group of 6 or more soldiers!
+ctld.troopPickupAtFOB = true -- if true, troops can also be picked up at a created FOB
 
-    --%%%%% FOB CONFIGURATION %%%%%
-        ctld.enabledFOBBuilding = true -- if true, you can load a crate INTO a C-130 than when unpacked creates a Forward Operating Base (FOB) which is a new place to spawn (crates) and carry crates from
-        -- In future i'd like it to be a FARP but so far that seems impossible...
-        -- You can also enable troop Pickup at FOBS
-        ctld.cratesRequiredForFOB = 1 -- The amount of crates required to build a FOB. Once built, helis can spawn crates at this outpost to be carried and deployed in another area.
-        -- The large crates can only be loaded and dropped by large aircraft, like the C-130 and listed in ctld.vehicleTransportEnabled
-        -- Small FOB crates can be moved by helicopter. The FOB will require ctld.cratesRequiredForFOB larges crates and small crates are 1/3 of a large fob crate
-        -- To build the FOB entirely out of small crates you will need ctld.cratesRequiredForFOB * 3
-        ctld.troopPickupAtFOB = true -- if true, troops can also be picked up at a created FOB
-        ctld.buildTimeFOB = 120 --time in seconds for the FOB to be built
+ctld.buildTimeFOB = 120 --time in seconds for the FOB to be built
 
-    --%%%%% CRATES CONFIGURATION %%%%%
-        ctld.crateWaitTime = 120 -- time in seconds to wait before you can spawn another crate
-        ctld.forceCrateToBeMoved = true -- a crate must be picked up at least once and moved before it can be unpacked. Helps to reduce crate spam
+ctld.crateWaitTime = 120 -- time in seconds to wait before you can spawn another crate
 
-    --%%%%% SOUND %%%%%
-        ctld.radioSound = "beacon.ogg" -- the name of the sound file to use for the FOB radio beacons. If this isnt added to the mission BEACONS WONT WORK!
-        ctld.radioSoundFC3 = "beaconsilent.ogg" -- name of the second silent radio file, used so FC3 aircraft dont hear ALL the beacon noises... :)
-        ctld.deployedBeaconBattery = 30 -- the battery on deployed beacons will last for this number minutes before needing to be re-deployed
-        ctld.enabledRadioBeaconDrop = true -- if its set to false then beacons cannot be dropped by units
+ctld.forceCrateToBeMoved = true -- a crate must be picked up at least once and moved before it can be unpacked. Helps to reduce crate spam
 
-        ctld.allowRandomAiTeamPickups = false -- Allows the AI to randomize the loading of infantry teams (specified below) at pickup zones
+ctld.radioSound = "beacon.ogg" -- the name of the sound file to use for the FOB radio beacons. If this isnt added to the mission BEACONS WONT WORK!
+ctld.radioSoundFC3 = "beaconsilent.ogg" -- name of the second silent radio file, used so FC3 aircraft dont hear ALL the beacon noises... :)
 
-    --%%%%% Simulated Sling load configuration %%%%%
-        ctld.minimumHoverHeight = 4.5 -- Lowest allowable height for crate hover (7.5)
-        ctld.maximumHoverHeight = 12.0 -- Highest allowable height for crate hover
-        ctld.maxDistanceFromCrate = 4.5 -- Maximum distance from from crate for hover (5.5)
+ctld.deployedBeaconBattery = 30 -- the battery on deployed beacons will last for this number minutes before needing to be re-deployed
 
-        ctld.hoverTime = 5 --Temps stationnaire pour élinguer (défaut : 10 secondes)
+ctld.enabledRadioBeaconDrop = true -- if its set to false then beacons cannot be dropped by units
 
-    --%%%%% AA SYSTEM CONFIG %%%%%
-        -- Sets a limit on the number of active AA systems that can be built for RED.
-        -- A system is counted as Active if its fully functional and has all parts
-        -- If a system is partially destroyed, it no longer counts towards the total
-        -- When this limit is hit, a player will still be able to get crates for an AA system, just unable
-        -- to unpack them
+ctld.allowRandomAiTeamPickups = false -- Allows the AI to randomize the loading of infantry teams (specified below) at pickup zones
 
-        ctld.AASystemLimitRED = 20 -- Red side limit
-        ctld.AASystemLimitBLUE = 20 -- Blue side limit
+-- Simulated Sling load configuration
 
-    -- ***************** JTAC CONFIGURATION *****************
-        ctld.JTAC_LIMIT_RED = 10 -- max number of JTAC Crates for the RED Side
-        ctld.JTAC_LIMIT_BLUE = 10 -- max number of JTAC Crates for the BLUE Side
+ctld.minimumHoverHeight = 7.5 -- Lowest allowable height for crate hover
+ctld.maximumHoverHeight = 12.0 -- Highest allowable height for crate hover
+ctld.maxDistanceFromCrate = 5.5 -- Maximum distance from from crate for hover
+ctld.hoverTime = 10 -- Time to hold hover above a crate for loading in seconds
 
-        ctld.JTAC_dropEnabled = true -- allow JTAC Crate spawn from F10 menu
+-- end of Simulated Sling load configuration
 
-        ctld.JTAC_maxDistance = 10000 -- How far a JTAC can "see" in meters (with Line of Sight)
+-- AA SYSTEM CONFIG --
+-- Sets a limit on the number of active AA systems that can be built for RED.
+-- A system is counted as Active if its fully functional and has all parts
+-- If a system is partially destroyed, it no longer counts towards the total
+-- When this limit is hit, a player will still be able to get crates for an AA system, just unable
+-- to unpack them
 
-        ctld.JTAC_smokeOn_RED = true -- enables marking of target with smoke for RED forces
-        ctld.JTAC_smokeOn_BLUE = true -- enables marking of target with smoke for BLUE forces
+ctld.AASystemLimitRED = 20 -- Red side limit
 
-        ctld.JTAC_smokeColour_RED = 4 -- RED side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
-        ctld.JTAC_smokeColour_BLUE = 1 -- BLUE side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
+ctld.AASystemLimitBLUE = 20 -- Blue side limit
 
-        ctld.JTAC_jtacStatusF10 = false -- enables F10 JTAC Status menu
+--END AA SYSTEM CONFIG --
 
-        ctld.JTAC_location = true -- shows location of target in JTAC message
-        ctld.location_DMS = false -- shows coordinates as Degrees Minutes Seconds instead of Degrees Decimal minutes
+-- ***************** JTAC CONFIGURATION *****************
 
-        ctld.JTAC_lock = "all" -- "vehicle" OR "troop" OR "all" forces JTAC to only lock vehicles or troops or all ground units
+ctld.JTAC_LIMIT_RED = 10 -- max number of JTAC Crates for the RED Side
+ctld.JTAC_LIMIT_BLUE = 10 -- max number of JTAC Crates for the BLUE Side
+
+ctld.JTAC_dropEnabled = true -- allow JTAC Crate spawn from F10 menu
+
+ctld.JTAC_maxDistance = 10000 -- How far a JTAC can "see" in meters (with Line of Sight)
+
+ctld.JTAC_smokeOn_RED = true -- enables marking of target with smoke for RED forces
+ctld.JTAC_smokeOn_BLUE = true -- enables marking of target with smoke for BLUE forces
+
+ctld.JTAC_smokeColour_RED = 4 -- RED side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
+ctld.JTAC_smokeColour_BLUE = 1 -- BLUE side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
+
+ctld.JTAC_jtacStatusF10 = true -- enables F10 JTAC Status menu
+
+ctld.JTAC_location = true -- shows location of target in JTAC message
+ctld.location_DMS = false -- shows coordinates as Degrees Minutes Seconds instead of Degrees Decimal minutes
+
+ctld.JTAC_lock = "all" -- "vehicle" OR "troop" OR "all" forces JTAC to only lock vehicles or troops or all ground units
+
+ctld.JTAC_laseSpotCorrections = false -- if true, the JTAC will attempt to lead the target, taking into account current wind conditions and the speed of the target (particularily useful against moving heavy armor)
 
 -- ***************** Pickup, dropoff and waypoint zones *****************
 
-    -- Available colors (anything else like "none" disables smoke): "green", "red", "white", "orange", "blue", "none",
-    -- Use any of the predefined names or set your own ones
-    -- You can add number as a third option to limit the number of soldier or vehicle groups that can be loaded from a zone.
-    -- Dropping back a group at a limited zone will add one more to the limit
-    -- If a zone isn't ACTIVE then you can't pickup from that zone until the zone is activated by ctld.activatePickupZone
-    -- using the Mission editor"pz
-    -- You can pickup from a SHIP by adding the SHIP UNIT NAME instead of a zone name
-    -- Side - Controls which side can load/unload troops at the zone
-    -- Flag Number - Optional last field. If set the current number of groups remaining can be obtained from the flag value
-    
+-- Available colors (anything else like "none" disables smoke): "green", "red", "white", "orange", "blue", "none",
+
+-- Use any of the predefined names or set your own ones
+
+-- You can add number as a third option to limit the number of soldier or vehicle groups that can be loaded from a zone.
+-- Dropping back a group at a limited zone will add one more to the limit
+
+-- If a zone isn't ACTIVE then you can't pickup from that zone until the zone is activated by ctld.activatePickupZone
+-- using the Mission editor
+
+-- You can pickup from a SHIP by adding the SHIP UNIT NAME instead of a zone name
+
+-- Side - Controls which side can load/unload troops at the zone
+
+-- Flag Number - Optional last field. If set the current number of groups remaining can be obtained from the flag value
+
+--pickupZones = { "Zone name or Ship Unit Name", "smoke color", "limit (-1 unlimited)", "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", flag number (optional) }
+ctld.pickupZones = {
+    { "pickzone1", "blue", -1, "yes", 0 },
+    { "pickzone2", "red", -1, "yes", 0 },
+    { "pickzone3", "none", -1, "yes", 0 },
+    { "pickzone4", "none", -1, "yes", 0 },
+    { "pickzone5", "none", -1, "yes", 0 },
+    { "pickzone6", "none", -1, "yes", 0 },
+    { "pickzone7", "none", -1, "yes", 0 },
+    { "pickzone8", "none", -1, "yes", 0 },
+    { "pickzone9", "none", 5, "yes", 1 }, -- limits pickup zone 9 to 5 groups of soldiers or vehicles, only red can pick up
+    { "pickzone10", "none", 10, "yes", 2 },  -- limits pickup zone 10 to 10 groups of soldiers or vehicles, only blue can pick up
+
+    { "pickzone11", "blue", 20, "no", 2 },  -- limits pickup zone 11 to 20 groups of soldiers or vehicles, only blue can pick up. Zone starts inactive!
+    { "pickzone12", "red", 20, "no", 1 },  -- limits pickup zone 11 to 20 groups of soldiers or vehicles, only blue can pick up. Zone starts inactive!
+    { "pickzone13", "none", -1, "yes", 0 },
+    { "pickzone14", "none", -1, "yes", 0 },
+    { "pickzone15", "none", -1, "yes", 0 },
+    { "pickzone16", "none", -1, "yes", 0 },
+    { "pickzone17", "none", -1, "yes", 0 },
+    { "pickzone18", "none", -1, "yes", 0 },
+    { "pickzone19", "none", 5, "yes", 0 },
+    { "pickzone20", "none", 10, "yes", 0, 1000 }, -- optional extra flag number to store the current number of groups available in
+
+    { "USA Carrier", "blue", 10, "yes", 0, 1001 }, -- instead of a Zone Name you can also use the UNIT NAME of a ship
+}
 
 
-    --%%%%% Notes de JGi %%%%%    
-    -- Les PickUp Zones sont les zones qui permettent d'embarquer des troupes.
-    -- Placez des zones sur la carte avec le nom d'une des zones dans la liste,
-    -- ou
-    -- reportez le nom de votre zone dans la liste ci-après.
+-- dropOffZones = {"name","smoke colour",0,side 1 = Red or 2 = Blue or 0 = Both sides}
+ctld.dropOffZones = {
+    { "dropzone1", "green", 2 },
+    { "dropzone2", "blue", 2 },
+    { "dropzone3", "orange", 2 },
+    { "dropzone4", "none", 2 },
+    { "dropzone5", "none", 1 },
+    { "dropzone6", "none", 1 },
+    { "dropzone7", "none", 1 },
+    { "dropzone8", "none", 1 },
+    { "dropzone9", "none", 1 },
+    { "dropzone10", "none", 1 },
+}
 
-    -- pickupZones = { "Zone name or Ship Unit Name", "smoke color", "limit (-1 unlimited)", "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", flag number (optional) }
-        ctld.pickupZones = {
-            { "pz-1", "none", -1, "yes", 0 },
-            { "pz-2", "none", -1, "yes", 0 },
-            { "pz-3", "none", -1, "yes", 0 },
-            { "pz-4", "none", -1, "yes", 0 },
-            { "pz-5", "none", -1, "yes", 0 },
-            { "pz-6", "none", -1, "yes", 0 },
-            { "pz-7", "none", -1, "yes", 0 },
-            { "pz-8", "none", -1, "yes", 0 },
-            { "pz-9", "none", -1, "yes", 0 },
 
-            { "pz-10", "none", -1, "yes", 0 },
-            { "pz-11", "none", -1, "yes", 0 },
-            { "pz-12", "none", -1, "yes", 0 },
-            { "pz-13", "none", -1, "yes", 0 },
-            { "pz-14", "none", -1, "yes", 0 },
-            { "pz-15", "none", -1, "yes", 0 },
-            { "pz-16", "none", -1, "yes", 0 },
-            { "pz-17", "none", -1, "yes", 0 },
-            { "pz-18", "none", -1, "yes", 0 },
-            { "pz-19", "none", -1, "yes", 0 },
-            
-            { "pz-20", "none", -1, "yes", 0 },
-            { "pz-21", "none", -1, "yes", 0 },
-            { "pz-22", "none", -1, "yes", 0 },
-            { "pz-23", "none", -1, "yes", 0 },
-            { "pz-24", "none", -1, "yes", 0 },
-            { "pz-25", "none", -1, "yes", 0 },
-            { "pz-26", "none", -1, "yes", 0 },
-            { "pz-27", "none", -1, "yes", 0 },
-            { "pz-28", "none", -1, "yes", 0 },
-            { "pz-29", "none", -1, "yes", 0 },
-            { "pz-30", "none", -1, "yes", 0 },
-            { "pz-31", "none", -1, "yes", 0 },
-            { "pz-32", "none", -1, "yes", 0 },
-            { "pz-33", "none", -1, "yes", 0 },
-            { "pz-34", "none", -1, "yes", 0 },
-            { "pz-35", "none", -1, "yes", 0 },
-            { "pz-36", "none", -1, "yes", 0 },
-            { "pz-37", "none", -1, "yes", 0 },
-            { "pz-38", "none", -1, "yes", 0 },
-            { "pz-39", "none", -1, "yes", 0 },
+--wpZones = { "Zone name", "smoke color",  "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", }
+ctld.wpZones = {
+    { "wpzone1", "green","yes", 2 },
+    { "wpzone2", "blue","yes", 2 },
+    { "wpzone3", "orange","yes", 2 },
+    { "wpzone4", "none","yes", 2 },
+    { "wpzone5", "none","yes", 2 },
+    { "wpzone6", "none","yes", 1 },
+    { "wpzone7", "none","yes", 1 },
+    { "wpzone8", "none","yes", 1 },
+    { "wpzone9", "none","yes", 1 },
+    { "wpzone10", "none","no", 0 }, -- Both sides as its set to 0
+}
 
-            { "pz-40", "none", -1, "yes", 0 },
-            { "pz-41", "none", -1, "yes", 0 },
-            { "pz-42", "none", -1, "yes", 0 },
-            { "pz-43", "none", -1, "yes", 0 },
-            { "pz-44", "none", -1, "yes", 0 },
-            { "pz-45", "none", -1, "yes", 0 },
-            { "pz-46", "none", -1, "yes", 0 },
-            { "pz-47", "none", -1, "yes", 0 },
-            { "pz-48", "none", -1, "yes", 0 },
-            { "pz-49", "none", -1, "yes", 0 },
-
-            { "pz-50", "none", -1, "yes", 0 },
-            { "pz-51", "none", -1, "yes", 0 },
-            { "pz-52", "none", -1, "yes", 0 },
-            { "pz-53", "none", -1, "yes", 0 },
-            { "pz-54", "none", -1, "yes", 0 },
-            { "pz-55", "none", -1, "yes", 0 },
-            { "pz-56", "none", -1, "yes", 0 },
-            { "pz-57", "none", -1, "yes", 0 },
-            { "pz-58", "none", -1, "yes", 0 },
-            { "pz-59", "none", -1, "yes", 0 },
-
-            { "pz-60", "none", -1, "yes", 0 },
-            { "pz-61", "none", -1, "yes", 0 },
-            { "pz-62", "none", -1, "yes", 0 },
-            { "pz-63", "none", -1, "yes", 0 },
-            { "pz-64", "none", -1, "yes", 0 },
-            { "pz-65", "none", -1, "yes", 0 },
-            { "pz-66", "none", -1, "yes", 0 },
-            { "pz-67", "none", -1, "yes", 0 },
-            { "pz-68", "none", -1, "yes", 0 },
-            { "pz-69", "none", -1, "yes", 0 },
-
-            { "pz-70", "none", -1, "yes", 0 },
-            { "pz-71", "none", -1, "yes", 0 },
-            { "pz-72", "none", -1, "yes", 0 },
-            { "pz-73", "none", -1, "yes", 0 },
-            { "pz-74", "none", -1, "yes", 0 },
-            { "pz-75", "none", -1, "yes", 0 },
-            { "pz-76", "none", -1, "yes", 0 },
-            { "pz-77", "none", -1, "yes", 0 },
-            { "pz-78", "none", -1, "yes", 0 },
-            { "pz-79", "none", -1, "yes", 0 },
-
-            { "pz-80", "none", -1, "yes", 0 },
-            { "pz-81", "none", -1, "yes", 0 },
-            { "pz-82", "none", -1, "yes", 0 },
-            { "pz-83", "none", -1, "yes", 0 },
-            { "pz-84", "none", -1, "yes", 0 },
-            { "pz-85", "none", -1, "yes", 0 },
-            { "pz-86", "none", -1, "yes", 0 },
-            { "pz-87", "none", -1, "yes", 0 },
-            { "pz-88", "none", -1, "yes", 0 },
-            { "pz-89", "none", -1, "yes", 0 },
-
-            { "pz-90", "none", -1, "yes", 0 },
-            { "pz-91", "none", -1, "yes", 0 },
-            { "pz-92", "none", -1, "yes", 0 },
-            { "pz-93", "none", -1, "yes", 0 },
-            { "pz-94", "none", -1, "yes", 0 },
-            { "pz-95", "none", -1, "yes", 0 },
-            { "pz-96", "none", -1, "yes", 0 },
-            { "pz-97", "none", -1, "yes", 0 },
-            { "pz-98", "none", -1, "yes", 0 },
-            { "pz-99", "none", -1, "yes", 0 },
-
-            -- CARRIERS
-            { "LHA-2 Saipan", "none", -1, "yes", 0 },
-            { "LHA-1 Tarawa", "none", -1, "yes", 0 },
-            { "HMS Invincible", "none", -1, "yes", 0 },
-
-            { "CV-59", "none", -1, "yes", 0 },
-            { "CV-59 Forrestal", "none", -1, "yes", 0 },
-
-            { "CVN-71", "none", -1, "yes", 0 },
-            { "CVN-71 Roosevelt", "none", -1, "yes", 0 },
-            { "CVN-71 T. Roosevelt", "none", -1, "yes", 0 },
-            { "CVN-71 Theodore Roosevelt", "none", -1, "yes", 0 },
-            
-            { "CVN-72", "none", -1, "yes", 0 },
-            { "CVN-72 Lincoln", "none", -1, "yes", 0 },
-            { "CVN-72 A. Lincoln", "none", -1, "yes", 0 },
-            { "CVN-72 Abraham Lincoln", "none", -1, "yes", 0 },
-
-            { "CVN-73", "none", -1, "yes", 0 },
-            { "CVN-73 Washington", "none", -1, "yes", 0 },
-            { "CVN-73 G. Washington", "none", -1, "yes", 0 },
-            { "CVN-73 George Washington", "none", -1, "yes", 0 },
-
-            { "CVN-74", "none", -1, "yes", 0 },
-            { "CVN-74 Stennis", "none", -1, "yes", 0 },
-            { "CVN-74 J. Stennis", "none", -1, "yes", 0 },
-            { "CVN-74 John C. Stennis", "none", -1, "yes", 0 },
-
-            { "CVN-75", "none", -1, "yes", 0 },
-            { "CVN-75 Truman", "none", -1, "yes", 0 },
-            { "CVN-75 H. Truman", "none", -1, "yes", 0 },
-            { "CVN-75 Harry S. Truman", "none", -1, "yes", 0 },
-
-            { "CV 1143.5 Kuznetsov", "none", -1, "yes", 0 },
-            { "CV 1143.5 Amiral Kuznetsov", "none", -1, "yes", 0 },
-
-            { "CV 1143.5 Kuznetsov (2017)", "none", -1, "yes", 0 },
-            { "CV 1143.5 Amiral Kuznetsov (2017)", "none", -1, "yes", 0 },
-
-            { "CV Varyag", "none", -1, "yes", 0 },
-            { "CV 1143.6 Varyag", "none", -1, "yes", 0 },
-            
-            { "USA Carrier", "none", 10, "yes", 0, 1001 },
-        }
-
-    -- dropOffZones = {"name","smoke colour",0,side 1 = Red or 2 = Blue or 0 = Both sides}
-        ctld.dropOffZones = {
-            { "dropzone1", "green", 2 },
-            { "dropzone2", "blue", 2 },
-        }
-
-    --wpZones = { "Zone name", "smoke color",  "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", }
-        ctld.wpZones = {
-            { "wpzone1", "green","yes", 2 },
-            { "wpzone2", "blue","yes", 2 },
-        }
 
 -- ******************** Transports names **********************
+
+-- Use any of the predefined names or set your own ones
+ctld.transportPilotNames = {
+    "helicargo1",
+    "helicargo2",
+    "helicargo3",
+    "helicargo4",
+    "helicargo5",
+    "helicargo6",
+    "helicargo7",
+    "helicargo8",
+    "helicargo9",
+    "helicargo10",
+
+    "helicargo11",
+    "helicargo12",
+    "helicargo13",
+    "helicargo14",
+    "helicargo15",
+    "helicargo16",
+    "helicargo17",
+    "helicargo18",
+    "helicargo19",
+    "helicargo20",
+
+    "helicargo21",
+    "helicargo22",
+    "helicargo23",
+    "helicargo24",
+    "helicargo25",
+
+    "MEDEVAC #1",
+    "MEDEVAC #2",
+    "MEDEVAC #3",
+    "MEDEVAC #4",
+    "MEDEVAC #5",
+    "MEDEVAC #6",
+    "MEDEVAC #7",
+    "MEDEVAC #8",
+    "MEDEVAC #9",
+    "MEDEVAC #10",
+    "MEDEVAC #11",
+    "MEDEVAC #12",
+    "MEDEVAC #13",
+    "MEDEVAC #14",
+    "MEDEVAC #15",
+    "MEDEVAC #16",
+
+    "MEDEVAC RED #1",
+    "MEDEVAC RED #2",
+    "MEDEVAC RED #3",
+    "MEDEVAC RED #4",
+    "MEDEVAC RED #5",
+    "MEDEVAC RED #6",
+    "MEDEVAC RED #7",
+    "MEDEVAC RED #8",
+    "MEDEVAC RED #9",
+    "MEDEVAC RED #10",
+    "MEDEVAC RED #11",
+    "MEDEVAC RED #12",
+    "MEDEVAC RED #13",
+    "MEDEVAC RED #14",
+    "MEDEVAC RED #15",
+    "MEDEVAC RED #16",
+    "MEDEVAC RED #17",
+    "MEDEVAC RED #18",
+    "MEDEVAC RED #19",
+    "MEDEVAC RED #20",
+    "MEDEVAC RED #21",
+
+    "MEDEVAC BLUE #1",
+    "MEDEVAC BLUE #2",
+    "MEDEVAC BLUE #3",
+    "MEDEVAC BLUE #4",
+    "MEDEVAC BLUE #5",
+    "MEDEVAC BLUE #6",
+    "MEDEVAC BLUE #7",
+    "MEDEVAC BLUE #8",
+    "MEDEVAC BLUE #9",
+    "MEDEVAC BLUE #10",
+    "MEDEVAC BLUE #11",
+    "MEDEVAC BLUE #12",
+    "MEDEVAC BLUE #13",
+    "MEDEVAC BLUE #14",
+    "MEDEVAC BLUE #15",
+    "MEDEVAC BLUE #16",
+    "MEDEVAC BLUE #17",
+    "MEDEVAC BLUE #18",
+    "MEDEVAC BLUE #19",
+    "MEDEVAC BLUE #20",
+    "MEDEVAC BLUE #21",
+
+    -- *** AI transports names (different names only to ease identification in mission) ***
+
     -- Use any of the predefined names or set your own ones
-    -- FARP Names : London Dallas Paris Moscou Berlin Rome Madrid Varsovie Dublin Perth
 
-    ctld.aircraftTypeTable = {
-        --%%%%% MODS %%%%%
-            "Bronco-OV-10A",
-            "Hercules",
-            "SK-60",
-            "UH-60L",
-            "T-45",
-        
-        --%%%%% CHOPPERS %%%%%
-            "Ka-50",
-            "Ka-50_3",
-            "Mi-8MT",
-            "Mi-24P",
-            "SA342L",
-            "SA342M",
-            "SA342Mistral",
-            "SA342Minigun",
-            "UH-1H",
-        
-        --%%%%% AIRCRAFTS %%%%%
-            "C-101EB",
-            "C-101CC",
-            "Christen Eagle II",
-            "L-39C",
-            "L-39ZA",
-            "MB-339A",
-            "MB-339APAN",
-            "Mirage-F1B",
-            "Mirage-F1BD",
-            "Mirage-F1BE",
-            "Mirage-F1BQ",
-            "Mirage-F1DDA",
-            "Su-25T",
-            "Yak-52",
+    "transport1",
+    "transport2",
+    "transport3",
+    "transport4",
+    "transport5",
+    "transport6",
+    "transport7",
+    "transport8",
+    "transport9",
+    "transport10",
 
-        --%%%%% WARBIRDS %%%%%
-            "Bf-109K-4",
-            "Fw 190A8",
-            "FW-190D9",
-            "I-16",
-            "MosquitoFBMkVI",
-            "P-47D-30",
-            "P-47D-40",
-            "P-51D",
-            "P-51D-30-NA",
-            "SpitfireLFMkIX",
-            "SpitfireLFMkIXCW",
-            "TF-51D",
-    }
+    "transport11",
+    "transport12",
+    "transport13",
+    "transport14",
+    "transport15",
+    "transport16",
+    "transport17",
+    "transport18",
+    "transport19",
+    "transport20",
 
-    --%%%%% Précisions de JGi %%%%%
-    -- Saisir ci-dessous le nom des unités, pas des groupes.
-    -- Les groupes ne doivent contenir qu'une unité
-    -- Il peux s'agir d'hélico ou d'avions (OV-10A Bronco, Hercules, Yak-52, etc...)
-    
-    ctld.transportPilotNames = {
-        --%%%%% SPECIFIQUE MISSION %%%%%
-            -- /!\ Inscrire ci-desous le nom des unités et pas des groupes
-            -- "Khasab - Hercules -1-1",
-            
-        -- FIN SPECIFIQUE MISSION
-
-    }
+    "transport21",
+    "transport22",
+    "transport23",
+    "transport24",
+    "transport25",
+}
 
 -- *************** Optional Extractable GROUPS *****************
-    -- Use any of the predefined names or set your own ones
-    ctld.extractableGroups = {
-        "extract1",
-        "extract2",
-        "extract3",
-        "extract4",
-        "extract5",
-    }
+
+-- Use any of the predefined names or set your own ones
+
+ctld.extractableGroups = {
+    "extract1",
+    "extract2",
+    "extract3",
+    "extract4",
+    "extract5",
+    "extract6",
+    "extract7",
+    "extract8",
+    "extract9",
+    "extract10",
+
+    "extract11",
+    "extract12",
+    "extract13",
+    "extract14",
+    "extract15",
+    "extract16",
+    "extract17",
+    "extract18",
+    "extract19",
+    "extract20",
+
+    "extract21",
+    "extract22",
+    "extract23",
+    "extract24",
+    "extract25",
+}
 
 -- ************** Logistics UNITS FOR CRATE SPAWNING ******************
-    -- Use any of the predefined names or set your own ones
-    -- When a logistic unit is destroyed, you will no longer be able to spawn crates
 
-    --%%%%% Notes de JGi %%%%%
-    -- Saisir ci-dessous le nom des statics qui distribueront les charges
-    ctld.logisticUnits = {
-        --%%%%% GENERIQUE %%%%%
-            --%%%%% HYSTER : "FENWICK" - Static CV-59 Hyster 60 (x50) %%%%%
-                "Static CV-59 Hyster 60-1-1",
-                "Static CV-59 Hyster 60-2-1",
-                "Static CV-59 Hyster 60-3-1",
-                "Static CV-59 Hyster 60-4-1",
-                "Static CV-59 Hyster 60-5-1",
-                "Static CV-59 Hyster 60-6-1",
-                "Static CV-59 Hyster 60-7-1",
-                "Static CV-59 Hyster 60-8-1",
-                "Static CV-59 Hyster 60-9-1",
+-- Use any of the predefined names or set your own ones
+-- When a logistic unit is destroyed, you will no longer be able to spawn crates
 
-                "Static CV-59 Hyster 60-10-1",
-                "Static CV-59 Hyster 60-11-1",
-                "Static CV-59 Hyster 60-12-1",
-                "Static CV-59 Hyster 60-13-1",
-                "Static CV-59 Hyster 60-14-1",
-                "Static CV-59 Hyster 60-15-1",
-                "Static CV-59 Hyster 60-16-1",
-                "Static CV-59 Hyster 60-17-1",
-                "Static CV-59 Hyster 60-18-1",
-                "Static CV-59 Hyster 60-19-1",
-
-                "Static CV-59 Hyster 60-20-1",
-                "Static CV-59 Hyster 60-21-1",
-                "Static CV-59 Hyster 60-22-1",
-                "Static CV-59 Hyster 60-23-1",
-                "Static CV-59 Hyster 60-24-1",
-                "Static CV-59 Hyster 60-25-1",
-                "Static CV-59 Hyster 60-26-1",
-                "Static CV-59 Hyster 60-27-1",
-                "Static CV-59 Hyster 60-28-1",
-                "Static CV-59 Hyster 60-29-1",
-
-                "Static CV-59 Hyster 60-30-1",
-                "Static CV-59 Hyster 60-31-1",
-                "Static CV-59 Hyster 60-32-1",
-                "Static CV-59 Hyster 60-33-1",
-                "Static CV-59 Hyster 60-34-1",
-                "Static CV-59 Hyster 60-35-1",
-                "Static CV-59 Hyster 60-36-1",
-                "Static CV-59 Hyster 60-37-1",
-                "Static CV-59 Hyster 60-38-1",
-                "Static CV-59 Hyster 60-39-1",
-
-                "Static CV-59 Hyster 60-40-1",
-                "Static CV-59 Hyster 60-41-1",
-                "Static CV-59 Hyster 60-42-1",
-                "Static CV-59 Hyster 60-43-1",
-                "Static CV-59 Hyster 60-44-1",
-                "Static CV-59 Hyster 60-45-1",
-                "Static CV-59 Hyster 60-46-1",
-                "Static CV-59 Hyster 60-47-1",
-                "Static CV-59 Hyster 60-48-1",
-                "Static CV-59 Hyster 60-49-1",
-            -- FIN HYSTER
-
-            --%%%%% FORKLIFT - Static CV-59 Large Forklift (x50) %%%%%
-                "Static CV-59 Large Forklift-1-1",
-                "Static CV-59 Large Forklift-2-1",
-                "Static CV-59 Large Forklift-3-1",
-                "Static CV-59 Large Forklift-4-1",
-                "Static CV-59 Large Forklift-5-1",
-                "Static CV-59 Large Forklift-6-1",
-                "Static CV-59 Large Forklift-7-1",
-                "Static CV-59 Large Forklift-8-1",
-                "Static CV-59 Large Forklift-9-1",
-
-                "Static CV-59 Large Forklift-10-1",
-                "Static CV-59 Large Forklift-11-1",
-                "Static CV-59 Large Forklift-12-1",
-                "Static CV-59 Large Forklift-13-1",
-                "Static CV-59 Large Forklift-14-1",
-                "Static CV-59 Large Forklift-15-1",
-                "Static CV-59 Large Forklift-16-1",
-                "Static CV-59 Large Forklift-17-1",
-                "Static CV-59 Large Forklift-18-1",
-                "Static CV-59 Large Forklift-19-1",
-
-                "Static CV-59 Large Forklift-20-1",
-                "Static CV-59 Large Forklift-21-1",
-                "Static CV-59 Large Forklift-22-1",
-                "Static CV-59 Large Forklift-23-1",
-                "Static CV-59 Large Forklift-24-1",
-                "Static CV-59 Large Forklift-25-1",
-                "Static CV-59 Large Forklift-26-1",
-                "Static CV-59 Large Forklift-27-1",
-                "Static CV-59 Large Forklift-28-1",
-                "Static CV-59 Large Forklift-29-1",
-
-                "Static CV-59 Large Forklift-30-1",
-                "Static CV-59 Large Forklift-30-1",
-                "Static CV-59 Large Forklift-31-1",
-                "Static CV-59 Large Forklift-32-1",
-                "Static CV-59 Large Forklift-33-1",
-                "Static CV-59 Large Forklift-34-1",
-                "Static CV-59 Large Forklift-35-1",
-                "Static CV-59 Large Forklift-36-1",
-                "Static CV-59 Large Forklift-37-1",
-                "Static CV-59 Large Forklift-38-1",
-                "Static CV-59 Large Forklift-39-1",
-
-                "Static CV-59 Large Forklift-40-1",
-                "Static CV-59 Large Forklift-40-1",
-                "Static CV-59 Large Forklift-41-1",
-                "Static CV-59 Large Forklift-42-1",
-                "Static CV-59 Large Forklift-43-1",
-                "Static CV-59 Large Forklift-44-1",
-                "Static CV-59 Large Forklift-45-1",
-                "Static CV-59 Large Forklift-46-1",
-                "Static CV-59 Large Forklift-47-1",
-                "Static CV-59 Large Forklift-48-1",
-                "Static CV-59 Large Forklift-49-1",
-            -- FIN FORKLIFT
-
-            --%%%%% LOGISTIC %%%%%
-                "logistic-1",
-                "logistic-2",
-                "logistic-3",
-                "logistic-4",
-                "logistic-5",
-                "logistic-6",
-                "logistic-7",
-                "logistic-8",
-                "logistic-9",
-                "logistic-10",
-
-                "logistic-11",
-                "logistic-12",
-                "logistic-13",
-                "logistic-14",
-                "logistic-15",
-                "logistic-16",
-                "logistic-17",
-                "logistic-18",
-                "logistic-19",
-                "logistic-20",
-
-                "logistic-21",
-                "logistic-22",
-                "logistic-23",
-                "logistic-24",
-                "logistic-25",
-                "logistic-26",
-                "logistic-27",
-                "logistic-28",
-                "logistic-29",
-                "logistic-30",
-            -- FIN LOGISTIC
-
-        -- FIN GENERIQUE
-        
-        --%%%%% SPECIFIQUES MISSION %%%%%
-            -- Exemples :
-            --"FARP London - Hyster 60",
-            --"Khasab - Hyster 60",
-        -- FIN SPECIFIQUE MISSION
-    }
+ctld.logisticUnits = {
+    "logistic1",
+    "logistic2",
+    "logistic3",
+    "logistic4",
+    "logistic5",
+    "logistic6",
+    "logistic7",
+    "logistic8",
+    "logistic9",
+    "logistic10",
+}
 
 -- ************** UNITS ABLE TO TRANSPORT VEHICLES ******************
-    -- Add the model name of the unit that you want to be able to transport and deploy vehicles
-    -- units db has all the names or you can extract a mission.miz file by making it a zip and looking
-    -- in the contained mission file
-    ctld.vehicleTransportEnabled = {
-        "76MD", -- the il-76 mod doesnt use a normal - sign so il-76md wont match... !!!! GRR
-        "Hercules", 
-    }
+-- Add the model name of the unit that you want to be able to transport and deploy vehicles
+-- units db has all the names or you can extract a mission.miz file by making it a zip and looking
+-- in the contained mission file
+ctld.vehicleTransportEnabled = {
+    "76MD", -- the il-76 mod doesnt use a normal - sign so il-76md wont match... !!!! GRR
+    "Hercules",
+}
 
 
 -- ************** Maximum Units SETUP for UNITS ******************
-    -- Put the name of the Unit you want to limit group sizes too
-    -- i.e
-    -- ["UH-1H"] = 10,
-    --
-    -- Will limit UH1 to only transport groups with a size 10 or less
-    -- Make sure the unit name is exactly right or it wont work
 
-    ctld.unitLoadLimits = {
-        -- Remove the -- below to turn on options
-        --%%%%% MODS %%%%%
-            ["Bronco-OV-10A"] = 4,
-            ["Hercules"] = 30,
-            ["SK-60"] = 1,
-            ["UH-60L"] = 12,
-            ["T-45"] = 1,
-        
-        --%%%%% CHOPPERS %%%%%
-            ["Mi-8MT"] = 16,
-            ["Mi-24P"] = 10,
-            ["SA342L"] = 4,
-            ["SA342M"] = 4,
-            ["SA342Mistral"] = 4,
-            ["SA342Minigun"] = 3,
-            ["UH-1H"] = 8,
-        
-        --%%%%% AIRCRAFTS %%%%%
-            ["C-101EB"] = 1,
-            ["C-101CC"] = 1,
-            ["Christen Eagle II"] = 1,
-            ["L-39C"] = 1,
-            ["L-39ZA"] = 1,
-            ["MB-339A"] = 1,
-            ["MB-339APAN"] = 1,
-            ["Mirage-F1B"] = 1,
-            ["Mirage-F1BD"] = 1,
-            ["Mirage-F1BE"] = 1,
-            ["Mirage-F1BQ"] = 1,
-            ["Mirage-F1DDA"] = 1,
-            ["Su-25T"] = 1,
-            ["Yak-52"] = 1,
+-- Put the name of the Unit you want to limit group sizes too
+-- i.e
+-- ["UH-1H"] = 10,
+--
+-- Will limit UH1 to only transport groups with a size 10 or less
+-- Make sure the unit name is exactly right or it wont work
 
-        --%%%%% WARBIRDS %%%%%
-            ["Bf-109K-4"] = 1,
-            ["Fw 190A8"] = 1,
-            ["FW-190D9"] = 1,
-            ["I-16"] = 1,
-            ["MosquitoFBMkVI"] = 1,
-            ["P-47D-30"] = 1,
-            ["P-47D-40"] = 1,
-            ["P-51D"] = 1,
-            ["P-51D-30-NA"] = 1,
-            ["SpitfireLFMkIX"] = 1,
-            ["SpitfireLFMkIXCW"] = 1,
-            ["TF-51D"] = 1,
-    }
+ctld.unitLoadLimits = {
+
+    -- Remove the -- below to turn on options
+    -- ["SA342Mistral"] = 4,
+    -- ["SA342L"] = 4,
+    -- ["SA342M"] = 4,
+
+}
 
 
 -- ************** Allowable actions for UNIT TYPES ******************
-    -- Put the name of the Unit you want to limit actions for
-    -- NOTE - the unit must've been listed in the transportPilotNames list above
-    -- This can be used in conjunction with the options above for group sizes
-    -- By default you can load both crates and troops unless overriden below
-    -- i.e
-    -- ["UH-1H"] = {crates=true, troops=false},
-    --
-    -- Will limit UH1 to only transport CRATES but NOT TROOPS
-    --
-    -- ["SA342Mistral"] = {crates=fales, troops=true},
-    -- Will allow Mistral Gazelle to only transport crates, not troops
 
-    ctld.unitActions = {
-        -- Remove the -- below to turn on options
+-- Put the name of the Unit you want to limit actions for
+-- NOTE - the unit must've been listed in the transportPilotNames list above
+-- This can be used in conjunction with the options above for group sizes
+-- By default you can load both crates and troops unless overriden below
+-- i.e
+-- ["UH-1H"] = {crates=true, troops=false},
+--
+-- Will limit UH1 to only transport CRATES but NOT TROOPS
+--
+-- ["SA342Mistral"] = {crates=fales, troops=true},
+-- Will allow Mistral Gazelle to only transport crates, not troops
 
-        --%%%%% MODS %%%%%
-            ["Bronco-OV-10A"] = {crates=true, troops=true},
-            ["Hercules"] = {crates=true, troops=true},
-            ["SK-60"] = {crates=true, troops=true},
-            ["UH-60L"] = {crates=true, troops=true},
-            ["T-45"] = {crates=true, troops=true},
-        
-        --%%%%% CHOPPERS %%%%%
-            ["Ka-50"] = {crates=true, troops=false},
-            ["Ka-50_3"] = {crates=true, troops=false},
-            ["Mi-8MT"] = {crates=true, troops=true},
-            ["Mi-24P"] = {crates=true, troops=true},
-            ["SA342L"] = {crates=false, troops=true},
-            ["SA342M"] = {crates=false, troops=true},
-            ["SA342Mistral"] = {crates=false, troops=true},
-            ["SA342Minigun"] = {crates=false, troops=true},
-            ["UH-1H"] = {crates=true, troops=true},
-        
-        --%%%%% AIRCRAFTS %%%%%
-            ["C-101EB"] = {crates=true, troops=true},
-            ["C-101CC"] = {crates=true, troops=true},
-            ["Christen Eagle II"] = {crates=true, troops=true},
-            ["L-39C"] = {crates=true, troops=true},
-            ["L-39ZA"] = {crates=true, troops=true},
-            ["MB-339A"] = {crates=true, troops=true},
-            ["MB-339APAN"] = {crates=true, troops=true},
-            ["Mirage-F1B"] = {crates=true, troops=true},
-            ["Mirage-F1BD"] = {crates=true, troops=true},
-            ["Mirage-F1BE"] = {crates=true, troops=true},
-            ["Mirage-F1BQ"] = {crates=true, troops=true},
-            ["Mirage-F1DDA"] = {crates=true, troops=true},
-            ["Su-25T"]= {crates=true, troops=false},
-            ["Yak-52"] = {crates=true, troops=true},
+ctld.unitActions = {
 
-        --%%%%% WARBIRDS %%%%%
-            ["Bf-109K-4"] = {crates=true, troops=false},
-            ["Fw 190A8"] = {crates=true, troops=false},
-            ["FW-190D9"] = {crates=true, troops=false},
-            ["I-16"] = {crates=true, troops=false},
-            ["MosquitoFBMkVI"] = {crates=true, troops=true},
-            ["P-47D-30"] = {crates=true, troops=false},
-            ["P-47D-40"] = {crates=true, troops=false},
-            ["P-51D"] = {crates=true, troops=false},
-            ["P-51D-30-NA"] = {crates=true, troops=false},
-            ["SpitfireLFMkIX"] = {crates=true, troops=false},
-            ["SpitfireLFMkIXCW"] = {crates=true, troops=false},
-            ["TF-51D"] = {crates=true, troops=true},
-    }
+    -- Remove the -- below to turn on options
+    -- ["SA342Mistral"] = {crates=true, troops=true},
+    -- ["SA342L"] = {crates=false, troops=true},
+    -- ["SA342M"] = {crates=false, troops=true},
+
+}
 
 -- ************** WEIGHT CALCULATIONS FOR INFANTRY GROUPS ******************
-    -- Infantry groups weight is calculated based on the soldiers' roles, and the weight of their kit
-    -- Every soldier weights between 90% and 120% of ctld.SOLDIER_WEIGHT, and they all carry a backpack and their helmet (ctld.KIT_WEIGHT)
-    -- Standard grunts have a rifle and ammo (ctld.RIFLE_WEIGHT)
-    -- AA soldiers have a MANPAD tube (ctld.MANPAD_WEIGHT)
-    -- Anti-tank soldiers have a RPG and a rocket (ctld.RPG_WEIGHT)
-    -- Machine gunners have the squad MG and 200 bullets (ctld.MG_WEIGHT)
-    -- JTAC have the laser sight, radio and binoculars (ctld.JTAC_WEIGHT)
-    -- Mortar servants carry their tube and a few rounds (ctld.MORTAR_WEIGHT)
 
-    ctld.SOLDIER_WEIGHT = 80 -- kg, will be randomized between 90% and 120%
-    ctld.KIT_WEIGHT = 20 -- kg
-    ctld.RIFLE_WEIGHT = 5 -- kg
-    ctld.MANPAD_WEIGHT = 18 -- kg
-    ctld.RPG_WEIGHT = 7.6 -- kg
-    ctld.MG_WEIGHT = 10 -- kg
-    ctld.MORTAR_WEIGHT = 26 -- kg
-    ctld.JTAC_WEIGHT = 15 -- kg
+-- Infantry groups weight is calculated based on the soldiers' roles, and the weight of their kit
+-- Every soldier weights between 90% and 120% of ctld.SOLDIER_WEIGHT, and they all carry a backpack and their helmet (ctld.KIT_WEIGHT)
+-- Standard grunts have a rifle and ammo (ctld.RIFLE_WEIGHT)
+-- AA soldiers have a MANPAD tube (ctld.MANPAD_WEIGHT)
+-- Anti-tank soldiers have a RPG and a rocket (ctld.RPG_WEIGHT)
+-- Machine gunners have the squad MG and 200 bullets (ctld.MG_WEIGHT)
+-- JTAC have the laser sight, radio and binoculars (ctld.JTAC_WEIGHT)
+-- Mortar servants carry their tube and a few rounds (ctld.MORTAR_WEIGHT)
+
+ctld.SOLDIER_WEIGHT = 80 -- kg, will be randomized between 90% and 120%
+ctld.KIT_WEIGHT = 20 -- kg
+ctld.RIFLE_WEIGHT = 5 -- kg
+ctld.MANPAD_WEIGHT = 18 -- kg
+ctld.RPG_WEIGHT = 7.6 -- kg
+ctld.MG_WEIGHT = 10 -- kg
+ctld.MORTAR_WEIGHT = 26 -- kg
+ctld.JTAC_WEIGHT = 15 -- kg
 
 -- ************** INFANTRY GROUPS FOR PICKUP ******************
-    -- Unit Types
-    -- inf is normal infantry
-    -- mg is M249
-    -- at is RPG-16
-    -- aa is Stinger or Igla
-    -- mortar is a 2B11 mortar unit
-    -- jtac is a JTAC soldier, which will use JTACAutoLase
-    -- You must add a name to the group for it to work
-    -- You can also add an optional coalition side to limit the group to one side
-    -- for the side - 2 is BLUE and 1 is RED
-    ctld.loadableGroups = {
-        --{name = "Standard Group", inf = 6, mg = 2, at = 2 }, -- will make a loadable group with 6 infantry, 2 MGs and 2 anti-tank for both coalitions
-        
-        --%%%%% MIXED %%%%%
-        {name = "Standard Group", mg = 2, at = 3, aa = 2, jtac = 1 },
-        {name = "Light Group", mg = 1, at = 1, aa = 1, jtac = 1 },
-        --{name = "Big Group", inf=9, mg = 6, at = 8, aa = 6, jtac = 1 },
-
-        --%%%%% SPECIALIZED %%%%%
-        {name = "Anti Air", mg = 2, aa = 4  },
-        {name = "Anti Tank", mg = 2, at = 6  },
-        {name = "Mortar Squad", mortar = 6 },
-        {name = "JTAC Group", inf = 3, jtac = 1 },
-
-        --%%%%% SINGLES %%%%%
-        {name = "Single JTAC", jtac = 1 },
-        {name = "Single Anti Air", aa = 1, },
-        {name = "Single Anti Tank", at = 1, },
-
-        --%%%%% WWII %%%%%
-        -- {name = "Infantery", mg = 1, },
-        -- {name = "Anti Tank", at = 1, },
-    }
+-- Unit Types
+-- inf is normal infantry
+-- mg is M249
+-- at is RPG-16
+-- aa is Stinger or Igla
+-- mortar is a 2B11 mortar unit
+-- jtac is a JTAC soldier, which will use JTACAutoLase
+-- You must add a name to the group for it to work
+-- You can also add an optional coalition side to limit the group to one side
+-- for the side - 2 is BLUE and 1 is RED
+ctld.loadableGroups = {
+    {name = "Standard Group", inf = 6, mg = 2, at = 2 }, -- will make a loadable group with 6 infantry, 2 MGs and 2 anti-tank for both coalitions
+    {name = "Anti Air", inf = 2, aa = 3  },
+    {name = "Anti Tank", inf = 2, at = 6  },
+    {name = "Mortar Squad", mortar = 6 },
+    {name = "JTAC Group", inf = 4, jtac = 1 }, -- will make a loadable group with 4 infantry and a JTAC soldier for both coalitions
+    {name = "Single JTAC", jtac = 1 }, -- will make a loadable group witha single JTAC soldier for both coalitions
+    -- {name = "Mortar Squad Red", inf = 2, mortar = 5, side =1 }, --would make a group loadable by RED only
+}
 
 -- ************** SPAWNABLE CRATES ******************
-    -- Weights must be unique as we use the weight to change the cargo to the correct unit
-    -- when we unpack
-    --
-    ctld.spawnableCrates = {
-        -- name of the sub menu on F10 for spawning crates
-        ["Crates - Ground Support"] = {
-            --crates you can spawn
-            -- weight in KG
-            -- Desc is the description on the F10 MENU
-            -- unit is the model name of the unit to spawn
-            -- cratesRequired - if set requires that many crates of the same type within 100m of each other in order build the unit
-            -- side is optional but 2 is BLUE and 1 is RED
-            -- dont use that option with the HAWK Crates
+-- Weights must be unique as we use the weight to change the cargo to the correct unit
+-- when we unpack
+--
+ctld.spawnableCrates = {
+    -- name of the sub menu on F10 for spawning crates
+    ["Ground Forces"] = {
+        --crates you can spawn
+        -- weight in KG
+        -- Desc is the description on the F10 MENU
+        -- unit is the model name of the unit to spawn
+        -- cratesRequired - if set requires that many crates of the same type within 100m of each other in order build the unit
+        -- side is optional but 2 is BLUE and 1 is RED
+        -- dont use that option with the HAWK Crates
+        { weight = 500, desc = "HMMWV - TOW", unit = "M1045 HMMWV TOW", side = 2 },
+        { weight = 505, desc = "HMMWV - MG", unit = "M1043 HMMWV Armament", side = 2 },
 
-            --%%%%% ATGM %%%%%
-            { weight = 700.010, desc = "M1134 Stryker ATGM", unit = "M1134 Stryker ATGM", side = 1, cratesRequired = 1 },
-            { weight = 700.011, desc = "VAB_Mephisto", unit = "VAB_Mephisto", side = 2, cratesRequired = 1 },
-            
-            --%%%%% APC - IFV %%%%%
-            { weight = 700.020, desc = "BTR-82A", unit = "BTR-82A", side = 1, cratesRequired = 1 },
-            { weight = 700.021, desc = "M2A2 Bradley", unit = "M-2 Bradley", side = 2, cratesRequired = 1 },
+        { weight = 510, desc = "BTR-D", unit = "BTR_D", side = 1 },
+        { weight = 515, desc = "BRDM-2", unit = "BRDM-2", side = 1 },
 
-            --%%%%% APC - IFV WWII %%%%%
-            --{ weight = 700.020, desc = "Sd Kfz 251 Halftack", unit = "Sd_Kfz_251", side = 1, cratesRequired = 1 },
-            --{ weight = 700.021, desc = "M2A1 Halftrack", unit = "M2A1_halftrack", side = 2, cratesRequired = 1 },
+        { weight = 520, desc = "HMMWV - JTAC", unit = "Hummer", side = 2, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
+        { weight = 525, desc = "SKP-11 - JTAC", unit = "SKP-11", side = 1, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
 
-            --%%%%% APC - IFV COLD WAR %%%%%
-            -- { weight = 700.020, desc = "BMP-2", unit = "BMP-2", side = 1, cratesRequired = 1 },
-            -- { weight = 700.021, desc = "M-113", unit = "M-113", side = 2, cratesRequired = 1 },
+        { weight = 100, desc = "2B11 Mortar", unit = "2B11 mortar" },
 
-            --%%%%% ARTILLERIE %%%%%
-            { weight = 700.030, desc = "SPH 2S19 Msta", unit = "SAU Msta", side = 1, cratesRequired = 2 },
-            { weight = 700.031, desc = "M-109 Paladin", unit = "M-109", side = 2, cratesRequired = 2 },
+        { weight = 250, desc = "SPH 2S19 Msta", unit = "SAU Msta", side = 1, cratesRequired = 3 },
+        { weight = 255, desc = "M-109", unit = "M-109", side = 2, cratesRequired = 3 },
 
-            --%%%%% MBT %%%%%
-            { weight = 700.040, desc = "MBT T-90", unit = "T-90", side = 1, cratesRequired = 2 },
-            { weight = 700.041, desc = "MBT M-1 Abrams", unit = "M-1 Abrams", side = 2, cratesRequired = 2 },
+        { weight = 252, desc = "Ural-375 Ammo Truck", unit = "Ural-375", side = 1, cratesRequired = 2 },
+        { weight = 253, desc = "M-818 Ammo Truck", unit = "M 818", side = 2, cratesRequired = 2 },
 
-            --%%%%% MBT COLD WAR %%%%%
-            --{ weight = 700.040, desc = "MBT T-55", unit = "T-55", side = 1, cratesRequired = 2 },
-            --{ weight = 700.041, desc = "MBT M-60 Patton", unit = "M-60", side = 2, cratesRequired = 2 },
+        { weight = 800, desc = "FOB Crate - Small", unit = "FOB-SMALL" }, -- Builds a FOB! - requires 3 * ctld.cratesRequiredForFOB
+    },
+    ["AA short range"] = {
+        { weight = 50, desc = "Stinger", unit = "Soldier stinger", side = 2 },
+        { weight = 55, desc = "Igla", unit = "SA-18 Igla manpad", side = 1 },
 
-            --%%%%% MBT WWII %%%%%
-            --{ weight = 700.040, desc = "MBT Tiger I", unit = "Tiger_I", side = 1, cratesRequired = 2 },
-            --{ weight = 700.041, desc = "MBT M4 Sherman", unit = "M4_Sherman", side = 2, cratesRequired = 2 },
+        { weight = 405, desc = "Strela-1 9P31", unit = "Strela-1 9P31", side = 1, cratesRequired = 3 },
+        { weight = 400, desc = "M1097 Avenger", unit = "M1097 Avenger", side = 2, cratesRequired = 3 },
+    },
+    ["AA mid range"] = {
+        -- HAWK System
+        { weight = 540, desc = "HAWK Launcher", unit = "Hawk ln", side = 2},
+        { weight = 545, desc = "HAWK Search Radar", unit = "Hawk sr", side = 2 },
+        { weight = 546, desc = "HAWK Track Radar", unit = "Hawk tr", side = 2 },
+        { weight = 547, desc = "HAWK PCP", unit = "Hawk pcp" , side = 2 }, -- Remove this if on 1.2
+	    { weight = 548, desc = "HAWK CWAR", unit = "Hawk cwar" , side = 2 }, -- Remove this if on 2.5	
+        { weight = 549, desc = "HAWK Repair", unit = "HAWK Repair" , side = 2 },
+        -- End of HAWK
 
-            --%%%%% JTAC %%%%%
-            { weight = 700.050, desc = "SKP-11 - JTAC", unit = "SKP-11", side = 1, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
-            { weight = 700.051, desc = "HMMWV - JTAC", unit = "Hummer", side = 2, }, -- used as jtac and unarmed, not on the crate list if JTAC is disabled
+        -- KUB SYSTEM
+        { weight = 560, desc = "KUB Launcher", unit = "Kub 2P25 ln", side = 1},
+        { weight = 565, desc = "KUB Radar", unit = "Kub 1S91 str", side = 1 },
+        { weight = 570, desc = "KUB Repair", unit = "KUB Repair", side = 1},
+        -- End of KUB
 
-            --%%%%% SOUTIEN LOG %%%%%
-            { weight = 800.020, desc = "Ural-375 Ammo Truck", unit = "Ural-375", side = 1, cratesRequired = 1 },
-            { weight = 800.021, desc = "M-818 Ammo Truck", unit = "M 818", side = 2, cratesRequired = 1 },
+        -- BUK System
+        --        { weight = 575, desc = "BUK Launcher", unit = "SA-11 Buk LN 9A310M1"},
+        --        { weight = 580, desc = "BUK Search Radar", unit = "SA-11 Buk SR 9S18M1"},
+        --        { weight = 585, desc = "BUK CC Radar", unit = "SA-11 Buk CC 9S470M1"},
+        --        { weight = 590, desc = "BUK Repair", unit = "BUK Repair"},
+        -- END of BUK
+    },
+    ["AA long range"] = {
+        -- Patriot System
+        { weight = 555, desc = "Patriot Launcher", unit = "Patriot ln", side = 2 },
+        { weight = 556, desc = "Patriot Radar", unit = "Patriot str" , side = 2 },
+        { weight = 557, desc = "Patriot ECS", unit = "Patriot ECS", side = 2 },
+        -- { weight = 553, desc = "Patriot ICC", unit = "Patriot cp", side = 2 },
+        -- { weight = 554, desc = "Patriot EPP", unit = "Patriot EPP", side = 2 },
+        { weight = 558, desc = "Patriot AMG (optional)", unit = "Patriot AMG" , side = 2 },
+        { weight = 559, desc = "Patriot Repair", unit = "Patriot Repair" , side = 2 },
+        -- End of Patriot
 
-            --%%%%% BASE AVANCEE %%%%%
-            { weight = 800.010, desc = "FOB Crate - Small", unit = "FOB-SMALL" }, --requires 3 * ctld.cratesRequiredForFOB
+        { weight = 595, desc = "Early Warning Radar", unit = "1L13 EWR", side = 1 }, -- cant be used by BLUE coalition
+    },
+}
 
-            --%%%%% WWII %%%%%
-                -- { weight = 200.010, desc = "2B11 Mortar", unit = "2B11 mortar" },
-                -- { weight = 800.010, desc = "FOB", unit = "FOB-SMALL" },
-                -- { weight = 800.020, desc = "Ammo Truck", unit = "Ural-375", cratesRequired = 1 },
-        },
-        ["Crates - Short range AA"] = {
-            --%%%%% MANPADS %%%%%
-            --{ weight = 90.300, desc = "Stinger", unit = "Soldier stinger", side = 2 },
-            --{ weight = 90.301, desc = "Igla", unit = "SA-18 Igla manpad", side = 1 },
+--- 3D model that will be used to represent a loadable crate ; by default, a generator
+ctld.spawnableCratesModel_load = {
+    ["category"] = "Fortifications",
+    ["shape_name"] = "GeneratorF",
+    ["type"] = "GeneratorF"
+}
 
-            --%%%%% AAA WWII %%%%%
-            --{ weight = 700.300, desc = "flak 38", unit = "flak38", side = 1, cratesRequired = 1 },
-            --{ weight = 700.301, desc = "Bofor 40", unit = "bofors40", side = 2, cratesRequired = 1 },
+--- 3D model that will be used to represent a slingable crate ; by default, a crate
+ctld.spawnableCratesModel_sling = {
+    ["category"] = "Cargos",
+    ["shape_name"] = "bw_container_cargo",
+    ["type"] = "container_cargo"
+}
 
-            --%%%%% AAA %%%%%
-            { weight = 700.310, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 1, cratesRequired = 1 },
-            { weight = 700.311, desc = "ZSU-23-4 Shilka", unit = "ZSU-23-4 Shilka", side = 1, cratesRequired = 1 },
+--[[ Placeholder for different type of cargo containers. Let's say pipes and trunks, fuel for FOB building
+    ["shape_name"] = "ab-212_cargo",
+    ["type"] = "uh1h_cargo" --new type for the container previously used
 
-            { weight = 700.312, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 2, cratesRequired = 1 },
-            { weight = 700.313, desc = "Gepard", unit = "Gepard", side = 2, cratesRequired = 1 },
+    ["shape_name"] = "ammo_box_cargo",
+    ["type"] = "ammo_cargo",
 
-            --%%%%% SAM IR %%%%%
-            { weight = 700.320, desc = "SA-19 Tunguska", unit = "2S6 Tunguska", side = 1, cratesRequired = 2 },
-            { weight = 700.321, desc = "SA-9 Strela", unit = "Strela-1 9P31", side = 1, cratesRequired = 2 },
-            
-            { weight = 700.322, desc = "M6 Linebacker", unit = "M6 Linebacker", side = 2, cratesRequired = 2 },
-            { weight = 700.323, desc = "M1097 Avenger", unit = "M1097 Avenger", side = 2, cratesRequired = 2 },
-            { weight = 700.324, desc = "M48 Chaparral", unit = "M48 Chaparral", side = 2, cratesRequired = 2 },
-        },
-        ["Crates - Mid range AA"] = {
-            { weight = 700.500, desc = "SA-8 Osa", unit = "Osa 9A33 ln", side = 1, cratesRequired = 3 }, 
-            { weight = 700.501, desc = "SA-15 Tor", unit = "Tor 9A331" , side = 1, cratesRequired = 3 },
+    ["shape_name"] = "barrels_cargo",
+    ["type"] = "barrels_cargo",
 
-            { weight = 700.502, desc = "Roland ADS", unit = "Roland ADS" , side = 2, cratesRequired = 3 },
-            
-            -- --%%%%% SA-6 KUB SYSTEM %%%%%
-            -- { weight = 700.510, desc = "KUB Launcher", unit = "Kub 2P25 ln", side = 1},
-            -- { weight = 700.511, desc = "KUB Radar", unit = "Kub 1S91 str", side = 1},
-            -- { weight = 700.512, desc = "KUB Repair", unit = "KUB Repair", side = 1},
-            -- --%%%%% HAWK System %%%%%
-            -- { weight = 700.513, desc = "HAWK Launcher", unit = "Hawk ln", side = 2},
-            -- { weight = 700.514, desc = "HAWK Search Radar", unit = "Hawk sr", side = 2 },
-            -- { weight = 700.515, desc = "HAWK Track Radar", unit = "Hawk tr", side = 2 },
-            -- { weight = 700.516, desc = "HAWK PCP", unit = "Hawk pcp" , side = 2 }, -- Remove this if on 1.5
-            -- { weight = 700.517, desc = "HAWK CWAR", unit = "Hawk cwar" , side = 2 }, -- Remove this if on 2.5	
-            -- { weight = 700.518, desc = "HAWK Repair", unit = "HAWK Repair" , side = 2 },
-        },
-        -- ["Crates - Long range AA"] = {
-        --     { weight = 595, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4},
-            
-        --     --%%%%% Patriot System %%%%%
-        --     { weight = 700.701, desc = "Patriot Launcher", unit = "Patriot ln", side = 2 },
-        --     { weight = 700.702, desc = "Patriot Radar", unit = "Patriot str" , side = 2 },
-        --     { weight = 700.703, desc = "Patriot ECS", unit = "Patriot ECS", side = 2 },
-        --     -- { weight = 700.704, desc = "Patriot ICC", unit = "Patriot cp", side = 2 },
-        --     -- { weight = 700.705, desc = "Patriot EPP", unit = "Patriot EPP", side = 2 },
-        --     { weight = 700.706, desc = "Patriot AMG (optional)", unit = "Patriot AMG" , side = 2 },
-        --     { weight = 700.707, desc = "Patriot Repair", unit = "Patriot Repair" , side = 2 },
-        --     { weight = 700.708, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4}, -- cant be used by BLUE coalition
-            
-        --     --%%%%% BUK System %%%%%
-        --     { weight = 700.710, desc = "BUK Launcher", unit = "SA-11 Buk LN 9A310M1"},
-        --     { weight = 700.711, desc = "BUK Search Radar", unit = "SA-11 Buk SR 9S18M1"},
-        --     { weight = 700.712, desc = "BUK CC Radar", unit = "SA-11 Buk CC 9S470M1"},
-        --     { weight = 700.713, desc = "BUK Repair", unit = "BUK Repair"},
-        -- },
-    }
+    ["shape_name"] = "bw_container_cargo",
+    ["type"] = "container_cargo",
 
-    --- 3D model that will be used to represent a loadable crate ; by default, a generator  
-    ctld.spawnableCratesModel_load = {
-        -- ["category"] = "Fortifications",
-        -- ["shape_name"] = "GeneratorF",
-        -- ["type"] = "GeneratorF",
+    ["shape_name"] = "f_bar_cargo",
+    ["type"] = "f_bar_cargo",
 
-        -- By JGi
-        ["category"] = "Cargos",
-        ["shape_name"] = "bw_container_cargo",
-        ["type"] = "container_cargo"
-    }
+    ["shape_name"] = "fueltank_cargo",
+    ["type"] = "fueltank_cargo",
 
-    --- 3D model that will be used to represent a slingable crate ; by default, a crate
-    ctld.spawnableCratesModel_sling = {
-        ["category"] = "Cargos",
-        ["shape_name"] = "bw_container_cargo",
-        ["type"] = "container_cargo"
-    }
+    ["shape_name"] = "iso_container_cargo",
+    ["type"] = "iso_container",
 
-    --[[ Placeholder for different type of cargo containers. Let's say pipes and trunks, fuel for FOB building
-        ["shape_name"] = "ab-212_cargo",
-        ["type"] = "uh1h_cargo" --new type for the container previously used
+    ["shape_name"] = "iso_container_small_cargo",
+    ["type"] = "iso_container_small",
 
-        ["shape_name"] = "ammo_box_cargo",
-        ["type"] = "ammo_cargo",
+    ["shape_name"] = "oiltank_cargo",
+    ["type"] = "oiltank_cargo",
 
-        ["shape_name"] = "barrels_cargo",
-        ["type"] = "barrels_cargo",
+    ["shape_name"] = "pipes_big_cargo",
+    ["type"] = "pipes_big_cargo",
 
-        ["shape_name"] = "bw_container_cargo",
-        ["type"] = "container_cargo",
+    ["shape_name"] = "pipes_small_cargo",
+    ["type"] = "pipes_small_cargo",
 
-        ["shape_name"] = "f_bar_cargo",
-        ["type"] = "f_bar_cargo",
+    ["shape_name"] = "tetrapod_cargo",
+    ["type"] = "tetrapod_cargo",
 
-        ["shape_name"] = "fueltank_cargo",
-        ["type"] = "fueltank_cargo",
+    ["shape_name"] = "trunks_long_cargo",
+    ["type"] = "trunks_long_cargo",
 
-        ["shape_name"] = "iso_container_cargo",
-        ["type"] = "iso_container",
+    ["shape_name"] = "trunks_small_cargo",
+    ["type"] = "trunks_small_cargo",
+]]--
 
-        ["shape_name"] = "iso_container_small_cargo",
-        ["type"] = "iso_container_small",
+-- if the unit is on this list, it will be made into a JTAC when deployed
+ctld.jtacUnitTypes = {
+    "SKP", "Hummer" -- there are some wierd encoding issues so if you write SKP-11 it wont match as the - sign is encoded differently...
+}
 
-        ["shape_name"] = "oiltank_cargo",
-        ["type"] = "oiltank_cargo",
-
-        ["shape_name"] = "pipes_big_cargo",
-        ["type"] = "pipes_big_cargo",
-
-        ["shape_name"] = "pipes_small_cargo",
-        ["type"] = "pipes_small_cargo",
-
-        ["shape_name"] = "tetrapod_cargo",
-        ["type"] = "tetrapod_cargo",
-
-        ["shape_name"] = "trunks_long_cargo",
-        ["type"] = "trunks_long_cargo",
-
-        ["shape_name"] = "trunks_small_cargo",
-        ["type"] = "trunks_small_cargo",
-    ]]--
-
-    -- if the unit is on this list, it will be made into a JTAC when deployed
-    ctld.jtacUnitTypes = {
-        "SKP", "Hummer" -- there are some wierd encoding issues so if you write SKP-11 it wont match as the - sign is encoded differently...
-    }
 
 -- ***************************************************************
 -- **************** Mission Editor Functions *********************
 -- ***************************************************************
 
---%%% ADD JGi - ADD PLAYER AIRCRAFT BY TYPE %%%
-    function AddPlayerAircraftByType()
-        _bluePlayers = coalition.getPlayers(2)
-        _redPlayers = coalition.getPlayers(1)
-
-        --> Blue Players
-        for i = 1, #_bluePlayers do
-            for i_2 = 1, #ctld.aircraftTypeTable do
-                if ctld.aircraftTypeTable[i_2] == Unit.getTypeName(_bluePlayers[i]) then
-                    _match = 0
-                    for i_3 = 1, #ctld.transportPilotNames do
-
-                        if ctld.transportPilotNames[i_3] == Unit.getName(_bluePlayers[i]) then
-                            _match = match + 1
-                        end
-                    end
-                    if _match == 0 then 
-                        ctld.transportPilotNames[#ctld.transportPilotNames+1] = Unit.getName(_bluePlayers[i])
-                    end
-
-                end
-            end
-        end
-
-        --> Red Players
-        for i = 1, #_redPlayers do
-            for i_2 = 1, #ctld.aircraftTypeTable do
-                if ctld.aircraftTypeTable[i_2] == Unit.getTypeName(_redPlayers[i]) then
-                    _match = 0
-                    for i_3 = 1, #ctld.transportPilotNames do
-
-                        if ctld.transportPilotNames[i_3] == Unit.getName(_redPlayers[i]) then
-                            _match = match + 1
-                        end
-                    end
-                    if _match == 0 then 
-                        ctld.transportPilotNames[#ctld.transportPilotNames+1] = Unit.getName(_redPlayers[i])
-                    end
-
-                end
-            end
-        end
-    end
 
 -----------------------------------------------------------------
 -- Spawn group at a trigger and set them as extractable. Usage:
@@ -1834,7 +1397,7 @@ ctld.AASystemTemplate = {
             {name = "Hawk tr", desc = "HAWK Track Radar"},
             {name = "Hawk sr", desc = "HAWK Search Radar"},
             {name = "Hawk pcp", desc = "HAWK PCP"},
-	    {name = "Hawk cwar", desc = "HAWK CWAR"},
+	        {name = "Hawk cwar", desc = "HAWK CWAR"},
         },
         repair = "HAWK Repair",
     },
@@ -2560,7 +2123,7 @@ function ctld.loadTroops(_heli, _troops, _numberOrTemplate)
 
     --number doesnt apply to vehicles
     if _numberOrTemplate == nil  or (type(_numberOrTemplate) ~= "table" and type(_numberOrTemplate) ~= "number")  then
-        _numberOrTemplate = ctld.numberOfTroops
+        _numberOrTemplate = ctld.getTransportLimit(_heli:getTypeName())
     end
 
     if _onboard == nil then
@@ -4659,7 +4222,7 @@ function ctld.spawnDroppedGroup(_point, _details, _spawnBehind, _maxSearch)
 
 
         for _i, _detail in ipairs(_details.units) do
-            _group.units[_i] = ctld.createUnit(_pos.x + (_xOffset + 30 * _i), _pos.z + (_yOffset + 30 * _i), _angle, _detail)
+            _group.units[_i] = ctld.createUnit(_pos.x + (_xOffset + 10 * _i), _pos.z + (_yOffset + 10 * _i), _angle, _detail)
         end
     end
 
@@ -5315,10 +4878,6 @@ function ctld.addF10MenuOptions()
 
     timer.scheduleFunction(ctld.addF10MenuOptions, nil, timer.getTime() + 10)
 
-    if ctld.addPlayerAircraftByType == true then 
-        AddPlayerAircraftByType() 
-    end
-
     for _, _unitName in pairs(ctld.transportPilotNames) do
 
         local status, error = pcall(function()
@@ -5410,19 +4969,12 @@ function ctld.addF10MenuOptions()
 
                         if (ctld.enabledFOBBuilding or ctld.enableCrates) and _unitActions.crates then
 
-                            local _crateCommands = missionCommands.addSubMenuForGroup(_groupId, "Crates - Actions", _rootPath)
-                            --%%%%% Adds By JGi %%%%%
-                            if ctld.hoverPickup == false or ctld.loadCrateFromMenu == true then
+                            local _crateCommands = missionCommands.addSubMenuForGroup(_groupId, "CTLD Commands", _rootPath)
+                            if ctld.hoverPickup == false then
                                 if  ctld.slingLoad == false then
-                                missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
+                                    missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate", _crateCommands, ctld.loadNearbyCrate,  _unitName )
                                 end
                             end
-                            --> Legacy
-                            --if ctld.hoverPickup == false then
-                                --if  ctld.slingLoad == false then
-                                -- missionCommands.addCommandForGroup(_groupId, "Load Nearby Crate (plane)", _crateCommands, ctld.loadNearbyCrate,  _unitName )
-                                --end
-                            --end
 
                             missionCommands.addCommandForGroup(_groupId, "Unpack Any Crate", _crateCommands, ctld.unpackCrates, { _unitName })
 
@@ -5482,6 +5034,7 @@ function ctld.addF10MenuOptions()
 
 
         if ctld.JTAC_jtacStatusF10 then
+
             -- get all BLUE players
             ctld.addJTACRadioCommand(2)
 
@@ -5531,16 +5084,113 @@ function ctld.addJTACRadioCommand(_side)
             local _groupId = ctld.getGroupId(_playerUnit)
 
             if _groupId then
+
+                local newGroup = false
                 --   env.info("adding command for "..index)
                 if ctld.jtacRadioAdded[tostring(_groupId)] == nil then
                     -- env.info("about command for "..index)
-                    missionCommands.addCommandForGroup(_groupId, "JTAC Status", nil, ctld.getJTACStatus, { _playerUnit:getName() })
+                    newGroup = true
+                    local JTACpath = missionCommands.addSubMenuForGroup(_groupId, ctld.jtacMenuName)
+                    missionCommands.addCommandForGroup(_groupId, "JTAC Status", JTACpath, ctld.getJTACStatus, { _playerUnit:getName() })
                     ctld.jtacRadioAdded[tostring(_groupId)] = true
                     -- env.info("Added command for " .. index)
                 end
+
+                --fetch the time to check for a regular refresh
+                local time = timer.getTime()
+
+                --depending on the delay, this part of the radio menu will be refreshed less often or as often as the static JTAC status command, this is for better reliability for the user when navigating through the menus. New groups will get the lists regardless and if a new JTAC is added all lists will be refreshed regardless of the delay.
+                if ctld.jtacLastRadioRefresh + ctld.jtacRadioRefreshDelay <= time or ctld.newJtac[_side] or newGroup then
+
+                    ctld.jtacLastRadioRefresh = time
+
+                    --build the path to the CTLD JTAC menu
+                    local jtacCurrentPagePath = {[1]=ctld.jtacMenuName}
+                    --build the path for the NextPage submenu on the first page of the CTLD JTAC menu
+                    local NextPageText = "Next Page"
+                    local MainNextPagePath = {[1]=ctld.jtacMenuName, [2]=NextPageText}
+                    --remove it along with everything that's in it
+                    missionCommands.removeItemForGroup(_groupId, MainNextPagePath)
+
+                    --counter to know when to add the next page submenu to fit all of the JTAC group submenus
+                    local jtacCounter = 0
+                
+                    for _jtacGroupName,jtacUnit in pairs(ctld.jtacUnits) do
+
+                        local jtacCoalition = ctld.jtacUnits[_jtacGroupName].side
+                        --if the JTAC is on the same team as the group being considered
+                        if jtacCoalition and jtacCoalition == _side then
+                            --only bother removing the submenus on the first page of the CTLD JTAC menu as the other pages were deleted entirely above
+                            if ctld.jtacGroupSubMenuPath[_jtacGroupName] and #ctld.jtacGroupSubMenuPath[_jtacGroupName]==2 then
+                                missionCommands.removeItemForGroup(_groupId, ctld.jtacGroupSubMenuPath[_jtacGroupName])
+                            end
+
+                            ctld.logTrace(string.format("jtacTargetsList for %s is : %s", ctld.p(_jtacGroupName), ctld.p(ctld.jtacTargetsList[_jtacGroupName])))
+
+                            if #ctld.jtacTargetsList[_jtacGroupName] > 1 then
+
+                                local jtacGroupSubMenuName = string.format(_jtacGroupName .. " TGT Selection")
+
+                                jtacCounter = jtacCounter + 1
+                                --F2 through F10 makes 9 entries possible per page, with one being the NextMenu submenu
+                                if jtacCounter%9 == 0 then
+                                    --recover the path to the current page with space available for JTAC group submenus
+                                    jtacCurrentPagePath = missionCommands.addSubMenuForGroup(_groupId, NextPageText, jtacCurrentPagePath)
+                                end
+                                --add the JTAC group submenu to the current page
+                                ctld.jtacGroupSubMenuPath[_jtacGroupName] = missionCommands.addSubMenuForGroup(_groupId, jtacGroupSubMenuName, jtacCurrentPagePath)
+
+                                ctld.logTrace(string.format("jtacGroupSubMenuPath for %s is : %s", ctld.p(_jtacGroupName), ctld.p(ctld.jtacGroupSubMenuPath[_jtacGroupName])))
+
+                                --make a copy of the JTAC group submenu's path to insert the target's list on as many pages as required. The JTAC's group submenu path only leads to the first page
+                                local jtacTargetPagePath = mist.utils.deepCopy(ctld.jtacGroupSubMenuPath[_jtacGroupName])
+                                --add a reset targeting option to revert to automatic JTAC unit targeting
+                                missionCommands.addCommandForGroup(_groupId, "Reset TGT Selection", jtacTargetPagePath, ctld.setJTACTarget, {jtacGroupName = _jtacGroupName, targetName = nil})
+                                
+                                --counter to know when to add the next page submenu to fit all of the targets in the JTAC's group submenu
+                                local itemCounter = 0
+
+                                --indicator table to know which unitType was already added to the radio submenu
+                                local typeNameList = {}
+                                for _,target in pairs(ctld.jtacTargetsList[_jtacGroupName]) do
+                                    local targetName = target.unit:getName()
+                                    --check if the jtac has a current target before filtering it out if possible
+                                    if (ctld.jtacCurrentTargets[_jtacGroupName] and targetName ~= ctld.jtacCurrentTargets[_jtacGroupName].name) then
+                                        local targetType_name = target.unit:getTypeName()
+
+                                        if targetType_name then
+                                                if typeNameList[targetType_name] then
+                                                    typeNameList[targetType_name].amount = typeNameList[targetType_name].amount + 1
+                                            else
+                                                    typeNameList[targetType_name] = {}
+                                                    typeNameList[targetType_name].targetName = targetName --store the first targetName
+                                                    typeNameList[targetType_name].amount = 1
+                                            end
+                                        end
+                                    end
+                                end
+
+                                for typeName,info in pairs(typeNameList) do
+                                    local amount = info.amount
+                                    local targetName = info.targetName
+                                    itemCounter = itemCounter + 1
+
+                                    --F2 through F10 makes 9 entries possible per page, with one being the NextMenu submenu. Pages other than the first would have 10 entires but worse case scenario is considered
+                                    if itemCounter%9 == 0 then
+                                        jtacTargetPagePath = missionCommands.addSubMenuForGroup(_groupId, NextPageText, jtacTargetPagePath)
+                                    end
+
+                                    missionCommands.addCommandForGroup(_groupId, string.format(typeName .. "(" .. amount .. ")"), jtacTargetPagePath, ctld.setJTACTarget, {jtacGroupName = _jtacGroupName, targetName = targetName})
+                                end
+                            end
+                        end
+                    end
+                end
             end
+        end
 
-
+        if ctld.newJtac[_side] then
+            ctld.newJtac[_side] = false
         end
     end
 end
@@ -5572,14 +5222,20 @@ end
 
 ------------ JTAC -----------
 
-
+ctld.jtacMenuName = "JTAC" --name of the CTLD JTAC radio menu
 ctld.jtacLaserPoints = {}
 ctld.jtacIRPoints = {}
 ctld.jtacSmokeMarks = {}
 ctld.jtacUnits = {} -- list of JTAC units for f10 command
 ctld.jtacStop = {} -- jtacs to tell to stop lasing
 ctld.jtacCurrentTargets = {}
+ctld.jtacTargetsList = {} --current available targets to each JTAC for lasing (targets from other JTACs are filtered out). Contains DCS unit objects with their methods and the distance to the JTAC {unit, dist}
+ctld.jtacSelectedTarget = {} --currently user selected target if it contains a unit's name, otherwise contains 1 or nil (if not initialized)
 ctld.jtacRadioAdded = {} --keeps track of who's had the radio command added
+ctld.jtacGroupSubMenuPath = {} --keeps track of which submenu contains each JTAC's target selection menu
+ctld.jtacRadioRefreshDelay = 60 --determines how often in seconds the dynamic parts of the jtac radio menu (target lists) will be refreshed
+ctld.jtacLastRadioRefresh = 0 -- time at which the target lists were refreshed for everyone at least
+ctld.newJtac = {} --indicator to know when a new JTAC is added to a coalition in order to rebuild the corresponding target lists
 ctld.jtacGeneratedLaserCodes = {} -- keeps track of generated codes, cycles when they run out
 ctld.jtacLaserPointCodes = {}
 ctld.jtacRadioData = {}
@@ -5616,10 +5272,8 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
     end
 
     if _lock == nil then
-
         _lock = ctld.JTAC_lock
     end
-
 
     ctld.jtacLaserPointCodes[_jtacGroupName] = _laserCode
     ctld.jtacRadioData[_jtacGroupName] = _radio
@@ -5655,22 +5309,30 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
             end
         end
 
-
         if ctld.jtacUnits[_jtacGroupName] ~= nil then
             ctld.notifyCoalition("JTAC Group " .. _jtacGroupName .. " KIA!", 10, ctld.jtacUnits[_jtacGroupName].side, _radio)
         end
 
         --remove from list
-        ctld.jtacUnits[_jtacGroupName] = nil
-
         ctld.cleanupJTAC(_jtacGroupName)
 
         return
     else
 
         _jtacUnit = _jtacGroup[1]
+        local _jtacCoalition = _jtacUnit:getCoalition()
         --add to list
-        ctld.jtacUnits[_jtacGroupName] = { name = _jtacUnit:getName(), side = _jtacUnit:getCoalition(), radio = _radio }
+        ctld.jtacUnits[_jtacGroupName] = { name = _jtacUnit:getName(), side = _jtacCoalition, radio = _radio }
+        
+        --Targets list and Selected target initialization
+        if not ctld.jtacTargetsList[_jtacGroupName] then
+            ctld.jtacTargetsList[_jtacGroupName] = {}
+            if _jtacCoalition then ctld.newJtac[_jtacCoalition] = true end
+        end
+
+        if not ctld.jtacSelectedTarget[_jtacGroupName] then
+            ctld.jtacSelectedTarget[_jtacGroupName] = 1
+        end
 
         -- work out smoke colour
         if _colour == nil then
@@ -5707,8 +5369,32 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
     end
 
     local _enemyUnit = ctld.getCurrentUnit(_jtacUnit, _jtacGroupName)
+    --update targets list and store the next potential target if the selected one was lost
+    local _defaultEnemyUnit = ctld.findNearestVisibleEnemy(_jtacUnit, _lock) 
+
+    -- if the JTAC sees a unit and a target was selected by users but is not the current unit, check if the selected target is in the targets list, if it is, then it's been reacquired
+    if _enemyUnit and ctld.jtacSelectedTarget[_jtacGroupName] ~= 1 and ctld.jtacSelectedTarget[_jtacGroupName] ~= _enemyUnit:getName() then
+        for _,target in pairs(ctld.jtacTargetsList[_jtacGroupName]) do
+            if target then
+                local targetUnit = target.unit
+                local targetName = targetUnit:getName()
+
+                if ctld.jtacSelectedTarget[_jtacGroupName] == targetName then
+
+                    ctld.jtacCurrentTargets[_jtacGroupName] = { name = targetName, unitType = targetUnit:getTypeName(), unitId = targetUnit:getID() }
+                    _enemyUnit = targetUnit
+
+                    local message = _jtacGroupName .. ", selected target reacquired, " .. _enemyUnit:getTypeName()
+                    local fullMessage = message .. '. CODE: ' .. _laserCode .. ". POSITION: " .. ctld.getPositionString(_enemyUnit)
+                    ctld.notifyCoalition(fullMessage, 10, _jtacUnit:getCoalition(), _radio, message)
+                end
+            end
+        end
+    end
+
     local targetDestroyed = false
     local targetLost = false
+    local wasSelected = false
 
     if _enemyUnit == nil and ctld.jtacCurrentTargets[_jtacGroupName] ~= nil then
 
@@ -5718,10 +5404,13 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
 
         local _tempUnit = Unit.getByName(_tempUnitInfo.name)
 
+        wasSelected = (ctld.jtacCurrentTargets[_jtacGroupName].name == ctld.jtacSelectedTarget[_jtacGroupName])
+
         if _tempUnit ~= nil and _tempUnit:getLife() > 0 and _tempUnit:isActive() == true then
             targetLost = true
         else
             targetDestroyed = true
+            ctld.jtacSelectedTarget[_jtacGroupName] = 1
         end
 
         --remove from smoke list
@@ -5739,23 +5428,36 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
 
 
     if _enemyUnit == nil then
-        _enemyUnit = ctld.findNearestVisibleEnemy(_jtacUnit, _lock)
-
-        if _enemyUnit ~= nil then
+        if _defaultEnemyUnit ~= nil then
 
             -- store current target for easy lookup
-            ctld.jtacCurrentTargets[_jtacGroupName] = { name = _enemyUnit:getName(), unitType = _enemyUnit:getTypeName(), unitId = _enemyUnit:getID() }
-            local action = ", lasing new target, "
+            ctld.jtacCurrentTargets[_jtacGroupName] = { name = _defaultEnemyUnit:getName(), unitType = _defaultEnemyUnit:getTypeName(), unitId = _defaultEnemyUnit:getID() }
+             
+            local action = "lasing new target, "
+            
+            if wasSelected and targetLost then
+                action = ", temporarily " .. action
+            else
+                action = ", " .. action
+            end
+            
             if targetLost then
-                action = ", target lost " .. action
-                targetLost = false
+                action = "target lost" .. action
             elseif targetDestroyed then
-                action = ", target destroyed " .. action
-                targetDestroyed = false
+                action = "target destroyed" .. action
             end
 
-            local message = _jtacGroupName .. action .. _enemyUnit:getTypeName()
-            local fullMessage = message .. '. CODE: ' .. _laserCode .. ". POSITION: " .. ctld.getPositionString(_enemyUnit)
+            if wasSelected then
+                action = ", selected " .. action
+            elseif targetLost or targetDestroyed then
+                action = ", " .. action
+            end
+            wasSelected = false
+            targetDestroyed = false
+            targetLost = false
+        
+            local message = _jtacGroupName .. action .. _defaultEnemyUnit:getTypeName()
+            local fullMessage = message .. '. CODE: ' .. _laserCode .. ". POSITION: " .. ctld.getPositionString(_defaultEnemyUnit)
             ctld.notifyCoalition(fullMessage, 10, _jtacUnit:getCoalition(), _radio, message)
 
 	        -- JTAC Unit stop his route -----------------
@@ -5765,18 +5467,36 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
             if _smoke == true then
 
                 --create first smoke
-                ctld.createSmokeMarker(_enemyUnit, _colour)
+                ctld.createSmokeMarker(_defaultEnemyUnit, _colour)
             end
         end
     end
 
     if _enemyUnit ~= nil then
 
+        local refreshDelay = 15 --delay in between JTACAutoLase scheduled calls when a target is tracked
+        local targetSpeedVec = _enemyUnit:getVelocity()
+        local targetSpeed = math.sqrt(targetSpeedVec.x^2+targetSpeedVec.y^2+targetSpeedVec.z^2)
+        local maxUpdateDist = 5 --maximum distance the unit will be allowed to travel before the lase spot is updated again
+        ctld.logDebug(string.format("targetSpeed=%s", ctld.p(targetSpeed)))
+
         ctld.laseUnit(_enemyUnit, _jtacUnit, _jtacGroupName, _laserCode)
 
-        --   env.info('Timer timerSparkleLase '..jtacGroupName.." "..laserCode.." "..enemyUnit:getName())
-        timer.scheduleFunction(ctld.timerJTACAutoLase, { _jtacGroupName, _laserCode, _smoke, _lock, _colour, _radio }, timer.getTime() + 15)
+        --if the target is going sufficiently fast for it to wander off futher than the maxUpdateDist, schedule laseUnit calls to update the lase spot only (we consider that the unit lives and drives on between JTACAutoLase calls)
+        if targetSpeed >= maxUpdateDist/refreshDelay then
+            local updateTimeStep = maxUpdateDist/targetSpeed --calculate the time step so that the target is never more than maxUpdateDist from it's last lased position
+            ctld.logDebug(string.format("updateTimeStep=%s", ctld.p(updateTimeStep)))
 
+            local i = 1
+            while i*updateTimeStep <= refreshDelay - updateTimeStep do --while the scheduled time for the laseUnit call isn't greater than the time between two JTACAutoLase() calls minus one time step (because at the next time step JTACAutoLase() should have been called and this in term also calls laseUnit())
+                ctld.logTrace("ctld.laseUnit scheduled " .. i)
+                timer.scheduleFunction(ctld.timerLaseUnit,{_enemyUnit, _jtacUnit, _jtacGroupName, _laserCode}, timer.getTime()+i*updateTimeStep)
+                i = i + 1
+            end
+        end
+
+        --   env.info('Timer timerSparkleLase '..jtacGroupName.." "..laserCode.." "..enemyUnit:getName())
+        timer.scheduleFunction(ctld.timerJTACAutoLase, { _jtacGroupName, _laserCode, _smoke, _lock, _colour, _radio }, timer.getTime() + refreshDelay)
 
         if _smoke == true then
             local _nextSmokeTime = ctld.jtacSmokeMarks[_enemyUnit:getName()]
@@ -5798,10 +5518,15 @@ function ctld.JTACAutoLase(_jtacGroupName, _laserCode, _smoke, _lock, _colour, _
         timer.scheduleFunction(ctld.timerJTACAutoLase, { _jtacGroupName, _laserCode, _smoke, _lock, _colour, _radio }, timer.getTime() + 5)
     end
 
+    local action = ", "
+    if wasSelected then
+        action = action .. "selected "
+    end
+
     if targetLost then
-        ctld.notifyCoalition(_jtacGroupName .. ", target lost.", 10, _jtacUnit:getCoalition(), _radio)
+        ctld.notifyCoalition(_jtacGroupName .. action .. "target lost.", 10, _jtacUnit:getCoalition(), _radio)
     elseif targetDestroyed then
-        ctld.notifyCoalition(_jtacGroupName .. ", target destroyed.", 10, _jtacUnit:getCoalition(), _radio)
+        ctld.notifyCoalition(_jtacGroupName .. action .. "target destroyed.", 10, _jtacUnit:getCoalition(), _radio)
     end
 end
 
@@ -5820,11 +5545,34 @@ function ctld.cleanupJTAC(_jtacGroupName)
     ctld.cancelLase(_jtacGroupName)
 
     -- Cleanup
-    ctld.jtacUnits[_jtacGroupName] = nil
-
     ctld.jtacCurrentTargets[_jtacGroupName] = nil
 
+    ctld.jtacTargetsList[_jtacGroupName] = nil
+
+    ctld.jtacSelectedTarget[_jtacGroupName] = nil
+
     ctld.jtacRadioData[_jtacGroupName] = nil
+
+    --remove the JTAC's group submenu and all of the target pages it potentially contained if the JTAC has or had a menu
+    if ctld.jtacUnits[_jtacGroupName] and ctld.jtacUnits[_jtacGroupName].side and ctld.jtacGroupSubMenuPath[_jtacGroupName] then
+        local _players = coalition.getPlayers(ctld.jtacUnits[_jtacGroupName].side)
+
+        if _players ~= nil then
+
+            for _, _playerUnit in pairs(_players) do
+
+                local _groupId = ctld.getGroupId(_playerUnit)
+
+                if _groupId then
+                    missionCommands.removeItemForGroup(_groupId, ctld.jtacGroupSubMenuPath[_jtacGroupName])
+                end
+            end
+        end
+    end
+
+    ctld.jtacUnits[_jtacGroupName] = nil
+
+    ctld.jtacGroupSubMenuPath[_jtacGroupName] = nil
 end
 
 
@@ -5839,26 +5587,26 @@ function ctld.notifyCoalition(_message, _displayFor, _side, _radio, _shortMessag
         _shortMessage = _message
     end
     
-    -- if STTS and STTS.TextToSpeech and _radio and _radio.freq then
-    --     local _freq = _radio.freq
-    --     local _modulation = _radio.mod or "FM"
-    --     local _volume = _radio.volume or "1.0"
-    --     local _name = _radio.name or "JTAC"
-    --     local _gender = _radio.gender or "male"
-    --     local _culture = _radio.culture or "en-US"
-    --     local _voice = _radio.voice
-    --     local _googleTTS = _radio.googleTTS or false
-    --     ctld.logTrace(string.format("calling STTS.TextToSpeech(%s)", ctld.p(_shortMessage)))
-    --     ctld.logTrace(string.format("_freq=%s", ctld.p(_freq)))
-    --     ctld.logTrace(string.format("_modulation=%s", ctld.p(_modulation)))
-    --     ctld.logTrace(string.format("_volume=%s", ctld.p(_volume)))
-    --     ctld.logTrace(string.format("_name=%s", ctld.p(_name)))
-    --     ctld.logTrace(string.format("_gender=%s", ctld.p(_gender)))
-    --     ctld.logTrace(string.format("_culture=%s", ctld.p(_culture)))
-    --     ctld.logTrace(string.format("_voice=%s", ctld.p(_voice)))
-    --     ctld.logTrace(string.format("_googleTTS=%s", ctld.p(_googleTTS)))
-    --     STTS.TextToSpeech(_shortMessage, _freq, _modulation, _volume, _name, _side, nil, 1, _gender, _culture, _voice, _googleTTS)
-    -- end
+    if STTS and STTS.TextToSpeech and _radio and _radio.freq then
+        local _freq = _radio.freq
+        local _modulation = _radio.mod or "FM"
+        local _volume = _radio.volume or "1.0"
+        local _name = _radio.name or "JTAC"
+        local _gender = _radio.gender or "male"
+        local _culture = _radio.culture or "en-US"
+        local _voice = _radio.voice
+        local _googleTTS = _radio.googleTTS or false
+        ctld.logTrace(string.format("calling STTS.TextToSpeech(%s)", ctld.p(_shortMessage)))
+        ctld.logTrace(string.format("_freq=%s", ctld.p(_freq)))
+        ctld.logTrace(string.format("_modulation=%s", ctld.p(_modulation)))
+        ctld.logTrace(string.format("_volume=%s", ctld.p(_volume)))
+        ctld.logTrace(string.format("_name=%s", ctld.p(_name)))
+        ctld.logTrace(string.format("_gender=%s", ctld.p(_gender)))
+        ctld.logTrace(string.format("_culture=%s", ctld.p(_culture)))
+        ctld.logTrace(string.format("_voice=%s", ctld.p(_voice)))
+        ctld.logTrace(string.format("_googleTTS=%s", ctld.p(_googleTTS)))
+        STTS.TextToSpeech(_shortMessage, _freq, _modulation, _volume, _name, _side, nil, 1, _gender, _culture, _voice, _googleTTS)
+    end
 
     trigger.action.outTextForCoalition(_side, _message, _displayFor)
     trigger.action.outSoundForCoalition(_side, "radiobeep.ogg")
@@ -5901,62 +5649,99 @@ function ctld.cancelLase(_jtacGroupName)
     end
 end
 
+-- used by the timer function
+function ctld.timerLaseUnit(_args)
+
+    ctld.laseUnit(_args[1], _args[2], _args[3], _args[4])
+end
+
 function ctld.laseUnit(_enemyUnit, _jtacUnit, _jtacGroupName, _laserCode)
 
     --cancelLase(jtacGroupName)
+    ctld.logTrace("ctld.laseUnit()")
 
     local _spots = {}
 
-    local _enemyVector = _enemyUnit:getPoint()
-    local _enemyVectorUpdated = { x = _enemyVector.x, y = _enemyVector.y + 2.0, z = _enemyVector.z }
+    if _enemyUnit:isExist() then
+        local _enemyVector = _enemyUnit:getPoint()
+        local _enemyVectorUpdated = { x = _enemyVector.x, y = _enemyVector.y + 2.0, z = _enemyVector.z }
 
-    local _oldLase = ctld.jtacLaserPoints[_jtacGroupName]
-    local _oldIR = ctld.jtacIRPoints[_jtacGroupName]
+        if ctld.JTAC_laseSpotCorrections then
+            local _enemySpeedVector = _enemyUnit:getVelocity()
+            ctld.logTrace(string.format("_enemySpeedVector=%s", ctld.p(_enemySpeedVector)))
 
-    if _oldLase == nil or _oldIR == nil then
+            local _WindSpeedVector = atmosphere.getWind(_enemyVectorUpdated)
+            ctld.logTrace(string.format("_WindSpeedVector=%s", ctld.p(_WindSpeedVector)))
+            
+            --if target speed is greater than 0, calculated using absolute value norm
+            if math.abs(_enemySpeedVector.x) + math.abs(_enemySpeedVector.y) + math.abs(_enemySpeedVector.z) > 0 then
+                local CorrectionFactor = 1 --correction factor in seconds applied to the target speed components to determine the lasing spot for a direct hit on a moving vehicle
 
-        -- create lase
+                --correct in the direction of the movement
+                _enemyVectorUpdated.x = _enemyVectorUpdated.x + _enemySpeedVector.x * CorrectionFactor
+                _enemyVectorUpdated.y = _enemyVectorUpdated.y + _enemySpeedVector.y * CorrectionFactor
+                _enemyVectorUpdated.z = _enemyVectorUpdated.z + _enemySpeedVector.z * CorrectionFactor
+            end
 
-        local _status, _result = pcall(function()
-            _spots['irPoint'] = Spot.createInfraRed(_jtacUnit, { x = 0, y = 2.0, z = 0 }, _enemyVectorUpdated)
-            _spots['laserPoint'] = Spot.createLaser(_jtacUnit, { x = 0, y = 2.0, z = 0 }, _enemyVectorUpdated, _laserCode)
-            return _spots
-        end)
+            --if wind speed is greater than 0, calculated using absolute value norm
+            if math.abs(_WindSpeedVector.x) + math.abs(_WindSpeedVector.y) + math.abs(_WindSpeedVector.z) > 0 then
+                local CorrectionFactor = 1.05 --correction factor in seconds applied to the wind speed components to determine the lasing spot for a direct hit in adverse conditions
 
-        if not _status then
-            env.error('ERROR: ' .. _result, false)
+                --correct to the opposite of the wind direction
+                _enemyVectorUpdated.x = _enemyVectorUpdated.x - _WindSpeedVector.x * CorrectionFactor
+                _enemyVectorUpdated.y = _enemyVectorUpdated.y - _WindSpeedVector.y * CorrectionFactor --not sure about correcting altitude but that component is always 0 in testing
+                _enemyVectorUpdated.z = _enemyVectorUpdated.z - _WindSpeedVector.z * CorrectionFactor
+            end
+            --combination of both should result in near perfect accuracy if the bomb doesn't stall itself following fast vehicles or correcting for heavy winds, correction factors can be adjusted but should work up to 40kn of wind for vehicles moving at 90kph (beware to drop the bomb in a way to not stall it, facing which ever is larger, target speed or wind)
+        end
+
+        local _oldLase = ctld.jtacLaserPoints[_jtacGroupName]
+        local _oldIR = ctld.jtacIRPoints[_jtacGroupName]
+
+        if _oldLase == nil or _oldIR == nil then
+
+            -- create lase
+
+            local _status, _result = pcall(function()
+                _spots['irPoint'] = Spot.createInfraRed(_jtacUnit, { x = 0, y = 2.0, z = 0 }, _enemyVectorUpdated)
+                _spots['laserPoint'] = Spot.createLaser(_jtacUnit, { x = 0, y = 2.0, z = 0 }, _enemyVectorUpdated, _laserCode)
+                return _spots
+            end)
+
+            if not _status then
+                env.error('ERROR: ' .. _result, false)
+            else
+                if _result.irPoint then
+
+                    --    env.info(jtacUnit:getName() .. ' placed IR Pointer on '..enemyUnit:getName())
+
+                    ctld.jtacIRPoints[_jtacGroupName] = _result.irPoint --store so we can remove after
+                end
+                if _result.laserPoint then
+
+                    --  env.info(jtacUnit:getName() .. ' is Lasing '..enemyUnit:getName()..'. CODE:'..laserCode)
+
+                    ctld.jtacLaserPoints[_jtacGroupName] = _result.laserPoint
+                end
+            end
+
         else
-            if _result.irPoint then
 
-                --    env.info(jtacUnit:getName() .. ' placed IR Pointer on '..enemyUnit:getName())
+            -- update lase
 
-                ctld.jtacIRPoints[_jtacGroupName] = _result.irPoint --store so we can remove after
+            if _oldLase ~= nil then
+                _oldLase:setPoint(_enemyVectorUpdated)
             end
-            if _result.laserPoint then
 
-                --  env.info(jtacUnit:getName() .. ' is Lasing '..enemyUnit:getName()..'. CODE:'..laserCode)
-
-                ctld.jtacLaserPoints[_jtacGroupName] = _result.laserPoint
+            if _oldIR ~= nil then
+                _oldIR:setPoint(_enemyVectorUpdated)
             end
-        end
-
-    else
-
-        -- update lase
-
-        if _oldLase ~= nil then
-            _oldLase:setPoint(_enemyVectorUpdated)
-        end
-
-        if _oldIR ~= nil then
-            _oldIR:setPoint(_enemyVectorUpdated)
         end
     end
 end
 
 -- get currently selected unit and check they're still in range
 function ctld.getCurrentUnit(_jtacUnit, _jtacGroupName)
-
 
     local _unit = nil
 
@@ -6003,6 +5788,7 @@ function ctld.findNearestVisibleEnemy(_jtacUnit, _targetType,_distance)
 
     local _nearestDistance = _maxDistance
 
+    local _jtacGroupName = _jtacUnit:getName()
     local _jtacPoint = _jtacUnit:getPoint()
     local _coa =    _jtacUnit:getCoalition()
 
@@ -6058,6 +5844,10 @@ function ctld.findNearestVisibleEnemy(_jtacUnit, _targetType,_distance)
     -- priority
     -- vehicle
     -- unit
+
+
+    ctld.jtacTargetsList[_jtacGroupName] = _unitList
+    --from the units in range, build the targets list, unsorted as to keep consistency between radio menu refreshes
 
     local _sort = function( a,b ) return a.dist < b.dist end
     table.sort(_unitList,_sort)
@@ -6241,7 +6031,7 @@ function ctld.getJTACStatus(_args)
 
             local _laserCode = ctld.jtacLaserPointCodes[_jtacGroupName]
 
-            local _start = _jtacGroupName
+            local _start = "->" .. _jtacGroupName
             if (_jtacDetails.radio) then
                 _start = _start .. ", available on ".._jtacDetails.radio.freq.." ".._jtacDetails.radio.mod ..","
             end
@@ -6251,7 +6041,18 @@ function ctld.getJTACStatus(_args)
             end
 
             if _enemyUnit ~= nil and _enemyUnit:getLife() > 0 and _enemyUnit:isActive() == true then
-                _message = _message .. "" .. _start .. " targeting " .. _enemyUnit:getTypeName() .. " CODE: " .. _laserCode .. ctld.getPositionString(_enemyUnit) .. "\n"
+
+                local action = " targeting "
+
+                if ctld.jtacSelectedTarget[_jtacGroupName] == _enemyUnit:getName() then 
+                    action = " targeting selected unit "
+                else
+                    if ctld.jtacSelectedTarget[_jtacGroupName] ~= 1 then
+                        action = " attempting to find selected unit, temporarily targeting "
+                    end
+                end
+
+                _message = _message .. "" .. _start .. action .. _enemyUnit:getTypeName() .. " CODE: " .. _laserCode .. ctld.getPositionString(_enemyUnit) .. "\n"
 
                 local _list = ctld.listNearbyEnemies(_jtacUnit)
 
@@ -6278,7 +6079,41 @@ function ctld.getJTACStatus(_args)
     ctld.notifyCoalition(_message, 10, _side)
 end
 
+function ctld.setJTACTarget(_args)
+    if _args then
+        local _jtacGroupName = _args.jtacGroupName
+        local targetName = _args.targetName
 
+        if _jtacGroupName and targetName and ctld.jtacSelectedTarget[_jtacGroupName] and ctld.jtacTargetsList[_jtacGroupName] then
+            
+            --look for the unit's (target) name in the Targets List, create the required data structure for jtacCurrentTargets and then assign it to the JTAC called _jtacGroupName
+            for _, target in pairs(ctld.jtacTargetsList[_jtacGroupName]) do
+
+                if target then
+
+                    local ListedTargetUnit = target.unit
+                    local ListedTargetName = ListedTargetUnit:getName()
+
+                    if ListedTargetName == targetName then
+
+                        ctld.jtacSelectedTarget[_jtacGroupName] = targetName
+                        ctld.jtacCurrentTargets[_jtacGroupName] = { name = targetName, unitType = ListedTargetUnit:getTypeName(), unitId = ListedTargetUnit:getID() }
+            
+                        local message = _jtacGroupName .. ", targeting selected unit, " .. ListedTargetUnit:getTypeName()
+                        local fullMessage = message .. '. CODE: ' .. ctld.jtacLaserPointCodes[_jtacGroupName] .. ". POSITION: " .. ctld.getPositionString(ListedTargetUnit)
+                        ctld.notifyCoalition(fullMessage, 10, ctld.jtacUnits[_jtacGroupName].side, ctld.jtacRadioData[_jtacGroupName], message)
+                    end
+                end
+            end
+        elseif not targetName and ctld.jtacSelectedTarget[_jtacGroupName] ~= 1 then
+            ctld.jtacSelectedTarget[_jtacGroupName] = 1
+            ctld.jtacCurrentTargets[_jtacGroupName] = nil
+
+            local message = _jtacGroupName .. ", target selection reset."
+            ctld.notifyCoalition(message, 10, ctld.jtacUnits[_jtacGroupName].side, ctld.jtacRadioData[_jtacGroupName])
+        end
+    end
+end
 
 function ctld.isInfantry(_unit)
 
@@ -6318,7 +6153,7 @@ function ctld.generateLaserCode()
     ctld.jtacGeneratedLaserCodes = {}
 
     -- generate list of laser codes
-    local _code = 1111
+    local _code = 1511
 
     local _count = 1
 
