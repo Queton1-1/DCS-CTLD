@@ -28,6 +28,7 @@
             Ajout preset IFV Cold War
             Renommage menu "CTLD Command" > "Crates - Actions"
             Ajout Load Crate au menu "ctld.loadCrateFromMenu == true"
+            Ajustements SAM spawnables
 
         1.19
             Plus besoin de déclarer les unités pour avoir accès à CTLD
@@ -39,7 +40,7 @@
             Suppression big group, ça fait trop ramer.
         
         1.17
-            Ajout distance function ctld.spawnDroppedGroup offset +10 >> offset +30
+            Ajout distance in 'function ctld.spawnDroppedGroup' _xOffset + 10 >> _xOffset + 30
             Reactivation transport véhicule Hercules
 
         1.16
@@ -417,9 +418,9 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
         --%%%%% MODS %%%%%
             "Bronco-OV-10A",
             "Hercules",
-            "SK-60",
+            --"SK-60",
             "UH-60L",
-            "T-45",
+            --"T-45",
         
         --%%%%% CHOPPERS %%%%%
             "Ka-50",
@@ -445,7 +446,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             "Mirage-F1BE",
             "Mirage-F1BQ",
             "Mirage-F1DDA",
-            "Su-25T",
+            --"Su-25T",
             "Yak-52",
 
         --%%%%% WARBIRDS %%%%%
@@ -917,7 +918,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             { weight = 700.311, desc = "ZSU-23-4 Shilka", unit = "ZSU-23-4 Shilka", side = 1, cratesRequired = 1 },
 
             { weight = 700.312, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 2, cratesRequired = 1 },
-            { weight = 700.313, desc = "Gepard", unit = "Gepard", side = 2, cratesRequired = 1 },
+            { weight = 700.313, desc = "Vulcan", unit = "Vulcan", side = 2, cratesRequired = 1 },
 
             --%%%%% SAM IR %%%%%
             { weight = 700.320, desc = "SA-19 Tunguska", unit = "2S6 Tunguska", side = 1, cratesRequired = 2 },
@@ -933,37 +934,37 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
             { weight = 700.502, desc = "Roland ADS", unit = "Roland ADS" , side = 2, cratesRequired = 3 },
             
-            -- --%%%%% SA-6 KUB SYSTEM %%%%%
-            -- { weight = 700.510, desc = "KUB Launcher", unit = "Kub 2P25 ln", side = 1},
-            -- { weight = 700.511, desc = "KUB Radar", unit = "Kub 1S91 str", side = 1},
-            -- { weight = 700.512, desc = "KUB Repair", unit = "KUB Repair", side = 1},
-            -- --%%%%% HAWK System %%%%%
-            -- { weight = 700.513, desc = "HAWK Launcher", unit = "Hawk ln", side = 2},
-            -- { weight = 700.514, desc = "HAWK Search Radar", unit = "Hawk sr", side = 2 },
-            -- { weight = 700.515, desc = "HAWK Track Radar", unit = "Hawk tr", side = 2 },
-            -- { weight = 700.516, desc = "HAWK PCP", unit = "Hawk pcp" , side = 2 }, -- Remove this if on 1.5
-            -- { weight = 700.517, desc = "HAWK CWAR", unit = "Hawk cwar" , side = 2 }, -- Remove this if on 2.5	
-            -- { weight = 700.518, desc = "HAWK Repair", unit = "HAWK Repair" , side = 2 },
+            --%%%%% SA-6 KUB SYSTEM %%%%%
+            { weight = 700.510, desc = "KUB Launcher", unit = "Kub 2P25 ln", side = 1},
+            { weight = 700.511, desc = "KUB Radar", unit = "Kub 1S91 str", side = 1},
+            { weight = 700.512, desc = "KUB Repair", unit = "KUB Repair", side = 1},
+            --%%%%% HAWK System %%%%%
+            { weight = 700.513, desc = "HAWK Launcher", unit = "Hawk ln", side = 2},
+            { weight = 700.514, desc = "HAWK Search Radar", unit = "Hawk sr", side = 2 },
+            { weight = 700.515, desc = "HAWK Track Radar", unit = "Hawk tr", side = 2 },
+            --{ weight = 700.516, desc = "HAWK PCP", unit = "Hawk pcp" , side = 2 }, -- Remove this if on 1.5
+            --{ weight = 700.517, desc = "HAWK CWAR", unit = "Hawk cwar" , side = 2 }, -- Remove this if on 2.5	
+            { weight = 700.518, desc = "HAWK Repair", unit = "HAWK Repair" , side = 2 },
         },
-        -- ["Crates - Long range AA"] = {
-        --     { weight = 595, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4},
+        ["Crates - Long range AA"] = {
+            --{ weight = 595, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4}, -- cant be used by BLUE coalition
+            { weight = 700.708, desc = "Early Warning Radar", unit = "FPS-117", cratesRequired = 4},
             
-        --     --%%%%% Patriot System %%%%%
-        --     { weight = 700.701, desc = "Patriot Launcher", unit = "Patriot ln", side = 2 },
-        --     { weight = 700.702, desc = "Patriot Radar", unit = "Patriot str" , side = 2 },
-        --     { weight = 700.703, desc = "Patriot ECS", unit = "Patriot ECS", side = 2 },
-        --     -- { weight = 700.704, desc = "Patriot ICC", unit = "Patriot cp", side = 2 },
-        --     -- { weight = 700.705, desc = "Patriot EPP", unit = "Patriot EPP", side = 2 },
-        --     { weight = 700.706, desc = "Patriot AMG (optional)", unit = "Patriot AMG" , side = 2 },
-        --     { weight = 700.707, desc = "Patriot Repair", unit = "Patriot Repair" , side = 2 },
-        --     { weight = 700.708, desc = "Early Warning Radar", unit = "1L13 EWR", cratesRequired = 4}, -- cant be used by BLUE coalition
+            -- --%%%%% Patriot System %%%%%
+            -- { weight = 700.701, desc = "Patriot Launcher", unit = "Patriot ln", side = 2 },
+            -- { weight = 700.702, desc = "Patriot Radar", unit = "Patriot str" , side = 2 },
+            -- { weight = 700.703, desc = "Patriot ECS", unit = "Patriot ECS", side = 2 },
+            -- -- { weight = 700.704, desc = "Patriot ICC", unit = "Patriot cp", side = 2 },
+            -- -- { weight = 700.705, desc = "Patriot EPP", unit = "Patriot EPP", side = 2 },
+            -- { weight = 700.706, desc = "Patriot AMG (optional)", unit = "Patriot AMG" , side = 2 },
+            -- { weight = 700.707, desc = "Patriot Repair", unit = "Patriot Repair" , side = 2 },
             
-        --     --%%%%% BUK System %%%%%
-        --     { weight = 700.710, desc = "BUK Launcher", unit = "SA-11 Buk LN 9A310M1"},
-        --     { weight = 700.711, desc = "BUK Search Radar", unit = "SA-11 Buk SR 9S18M1"},
-        --     { weight = 700.712, desc = "BUK CC Radar", unit = "SA-11 Buk CC 9S470M1"},
-        --     { weight = 700.713, desc = "BUK Repair", unit = "BUK Repair"},
-        -- },
+            -- --%%%%% BUK System %%%%%
+            -- { weight = 700.710, desc = "BUK Launcher", unit = "SA-11 Buk LN 9A310M1"},
+            -- { weight = 700.711, desc = "BUK Search Radar", unit = "SA-11 Buk SR 9S18M1"},
+            -- { weight = 700.712, desc = "BUK CC Radar", unit = "SA-11 Buk CC 9S470M1"},
+            -- { weight = 700.713, desc = "BUK Repair", unit = "BUK Repair"},
+        },
     }
 
     --- 3D model that will be used to represent a loadable crate ; by default, a generator  
