@@ -23,6 +23,8 @@
       
    %%%%% JGi | Quéton 1-1 %%%%%
         Changelog
+        1.21
+            Ajout C-RAM
         1.20
             Proposition des modifications à Ciribob
             Ajout preset IFV Cold War
@@ -140,7 +142,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
 
         --ctld.vehiclesForTransportBLUE = { "M1045 HMMWV TOW", "M1043 HMMWV Armament" } -- vehicles to load onto c130 - Alternatives {"M1128 Stryker MGS","M1097 Avenger"}
         --> Modern
-        ctld.vehiclesForTransportBLUE = { "M-2 Bradley", "Ural-375 ZU-23 Insurgent" }
+        ctld.vehiclesForTransportBLUE = { "M-2 Bradley", "M1097 Avenger" }
         --> COLD WAR
         --ctld.vehiclesForTransportBLUE = { "M-113", "Ural-375 ZU-23 Insurgent" }
 
@@ -149,6 +151,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             ["BTR_D"] = 8000,
             ["M1045 HMMWV TOW"] = 3220,
             ["M1043 HMMWV Armament"] = 2500,
+            ["M1097 Avenger"] = 3900,
             ["Ural-375 ZU-23 Insurgent"] = 9000,
             ["M-2 Bradley"] = 15000,
             ["BMP-2"] = 7000,
@@ -446,7 +449,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             "Mirage-F1BE",
             "Mirage-F1BQ",
             "Mirage-F1DDA",
-            --"Su-25T",
+            "Su-25T",
             "Yak-52",
 
         --%%%%% WARBIRDS %%%%%
@@ -917,9 +920,9 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
             { weight = 700.310, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 1, cratesRequired = 1 },
             { weight = 700.311, desc = "ZSU-23-4 Shilka", unit = "ZSU-23-4 Shilka", side = 1, cratesRequired = 1 },
 
-            { weight = 700.312, desc = "ZU-23", unit = "Ural-375 ZU-23 Insurgent", side = 2, cratesRequired = 1 },
             { weight = 700.313, desc = "Vulcan", unit = "Vulcan", side = 2, cratesRequired = 1 },
-
+            { weight = 700.314, desc = "C-RAM", unit = "HEMTT_C-RAM_Phalanx", side = 2, cratesRequired = 1 },
+            
             --%%%%% SAM IR %%%%%
             { weight = 700.320, desc = "SA-19 Tunguska", unit = "2S6 Tunguska", side = 1, cratesRequired = 2 },
             { weight = 700.321, desc = "SA-9 Strela", unit = "Strela-1 9P31", side = 1, cratesRequired = 2 },
