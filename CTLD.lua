@@ -1074,7 +1074,7 @@ ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
                     for i_3 = 1, #ctld.transportPilotNames do
 
                         if ctld.transportPilotNames[i_3] == Unit.getName(_redPlayers[i]) then
-                            _match = match + 1
+                            _match = _match + 1
                         end
                     end
                     if _match == 0 then 
