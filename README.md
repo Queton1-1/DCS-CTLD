@@ -16,6 +16,12 @@ Une vidéo arrivera prochainement sur ma chaîne [YouTube](https://www.youtube.c
 ### Télechargez la dernière version à partir de la page [Releases](https://github.com/Queton1-1/DCS-CTLD/releases)  
 
 ### Ajustez les paramètres du script suivant vos besoins
+
+Dans ma version du script, personnalisez : 
+> ctld.aircraftTypeTable = {}
+En activant ou désactivant "--" les types d'appareils qui pourront  transporter
+
+Dans la version de Ciribob
 ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des groupes) concernées par le transport.  
 > ctld.transportPilotNames = {  
 > "mon avion -1",
@@ -23,6 +29,8 @@ ajoutez dans le tableau *ctld.transportPilotNames* le nom des unités (pas des g
 > }  
  
 A noter que les groupes ne peuvent être composés que d'**une** unité.  
+
+Installez vos zones de logistiques (pz-x / static)
   
 ### Le script nécessite que *Mist* soit chargé dans la mission au préalable.
  - Déclencheur de type une fois | Regles : tps sup à 1 seconde | Actions : charger script *Mist.lua*
